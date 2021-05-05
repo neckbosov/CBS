@@ -16,13 +16,33 @@ public:
     double f_value;
     Coordinates parent;
 
-    bool operator<(const Node &other);
+    bool operator<(const Node<Coordinates> &other) const {
+        return this->f_value + 1e-7 < other.f_value;
+    }
 
-    Node();
+    bool operator>(const Node<Coordinates> &other) const {
+        return this->f_value > other.f_value + 1e-7;
+    }
 
-    Node(Coordinates coordinates1, double g_value1, double h_value1,Coordinates parent);
+    Node() {
+        g_value = h_value = f_value = 0.0;
+    }
 
-    Node(const Node &other);
+    Node(Coordinates coordinates1, double g_value1, double h_value1, Coordinates parent1) {
+        g_value = g_value1;
+        coordinates = coordinates1;
+        h_value = h_value1;
+        f_value = h_value + g_value;
+        parent = parent1;
+    }
+
+    Node(const Node<Coordinates> &other) {
+        g_value = other.g_value;
+        f_value = other.f_value;
+        h_value = other.h_value;
+        coordinates = other.coordinates;
+        parent = other.parent;
+    }
 };
 
 template<typename Coordinates>

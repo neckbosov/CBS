@@ -8,9 +8,9 @@
 #include <queue>
 #include <vector>
 #include <unordered_set>
-#include <tuple>
-#include <optional>
-
+#include <unordered_map>
+#include <algorithm>
+#include <iostream>
 #include "graph.h"
 
 template<typename Coordinates, typename Compare=std::greater<Node<Coordinates>>>
@@ -18,15 +18,28 @@ class Open {
 private:
     std::priority_queue<Node<Coordinates>, std::vector<Node<Coordinates>>, Compare> elements;
 public:
-    bool empty();
+    bool empty() {
+        return elements.empty();
+    }
 
-    Node<Coordinates> get_best_node();
+    Node<Coordinates> get_best_node() {
+        auto res = elements.top();
+        elements.pop();
+        return res;
+    }
 
-    void add_node(Node<Coordinates> node);
+    void add_node(Node<Coordinates> node) {
+        elements.push(node);
+    }
 
-    Open();
+    Open() {
+        elements = std::priority_queue<Node<Coordinates>, std::vector<Node<Coordinates>>, Compare>(
+                std::greater<Node<Coordinates>>());
+    }
 
-    explicit Open(Compare comp);
+    explicit Open(Compare comp) {
+        elements = std::priority_queue<Node<Coordinates>, std::vector<Node<Coordinates>>, Compare>(comp);
+    }
 };
 
 template<typename Coordinates>
@@ -34,13 +47,56 @@ class Closed {
 private:
     std::unordered_set<Coordinates> elements;
 public:
-    void add_node(Coordinates coors);
+    void add_node(Coordinates coors) {
+        elements.insert(coors);
+    }
 
-    bool was_expanded(Coordinates coors);
+    bool was_expanded(Coordinates coors) {
+        return elements.find(coors) != elements.end();
+    }
 };
 
 template<typename Coordinates, typename Compare = std::greater<Node<Coordinates>>>
-std::optional<Node<Coordinates>>
-astar(Graph<Coordinates> graph, Coordinates start, Coordinates goal, Compare comp = std::greater<Node<Coordinates>>());
+std::vector<std::pair<Coordinates, double>>
+astar(Graph<Coordinates> *graph, Coordinates start, Coordinates goal,
+      Compare comp = std::greater<Node<Coordinates>>()) {
+    auto open = Open<Coordinates>(comp);
+    std::unordered_map<Coordinates, Coordinates> real_parent;
+    std::unordered_map<Coordinates, double> dist;
+    auto closed = Closed<Coordinates>();
+    auto start_node = Node<Coordinates>(start, 0.0, 0.0, start);
+    open.add_node(start_node);
+    real_parent[start] = start;
+    dist[start] = 0.0;
+    while (!open.empty()) {
+        auto v = open.get_best_node();
+        if (closed.was_expanded(v.coordinates)) {
+            continue;
+        }
+        closed.add_node(v.coordinates);
+        real_parent[v.coordinates] = v.parent;
+        dist[v.coordinates] = v.g_value;
+        if (v.coordinates == goal) {
+            std::vector<std::pair<Coordinates, double>> path;
+            auto cur_coors = v.coordinates;
+            while (real_parent[cur_coors] != cur_coors) {
+                path.emplace_back(cur_coors, dist[cur_coors]);
+                cur_coors = real_parent[cur_coors];
+            }
+            path.emplace_back(cur_coors, dist[cur_coors]);
+            std::reverse(path.begin(), path.end());
+            return path;
+        }
+        for (auto x : graph->get_neighbours(v.coordinates)) {
+            if (!closed.was_expanded(x)) {
+                auto nodeX = Node<Coordinates>(x, v.g_value + graph->get_cost(v.coordinates, x),
+                                               graph->get_h_value(goal, x),
+                                               v.coordinates);
+                open.add_node(nodeX);
+            }
+        }
+    }
+    return std::vector<std::pair<Coordinates, double>>();
+}
 
 #endif //COURSE_PROJECT_ASTAR_H
