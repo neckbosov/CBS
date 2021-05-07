@@ -2,14 +2,15 @@
 #include "graph.h"
 #include "astar.h"
 #include <unordered_map>
+//#include "cbs.h"
 #include <vector>
 
 class SimpleGraph : public Graph<int> {
 public:
-    std::vector<std::unordered_map<int, double>> weights;
+    std::vector<std::unordered_map<int, int>> weights;
     std::vector<std::vector<int>> g;
 
-    double get_cost(int a, int b) override {
+    int get_cost(int a, int b) override {
         return weights[a][b];
     }
 

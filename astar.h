@@ -56,15 +56,43 @@ public:
     }
 };
 
+template<typename Coordinates>
+struct TimedCoordinates {
+    Coordinates coordinates;
+    int time;
+
+    bool operator==(const TimedCoordinates<Coordinates> &other) const {
+        return coordinates == other.coordinates && time == other.time;
+    }
+
+    bool operator!=(const TimedCoordinates<Coordinates> &other) const {
+        return !(*this == other);
+    }
+};
+
+namespace std {
+    template<typename Coordinates>
+    struct hash<TimedCoordinates<Coordinates>> {
+        size_t operator()(const TimedCoordinates<Coordinates> &timedCoordinates) const {
+            auto int_hasher = hash<int>();
+            auto coors_hasher = hash<Coordinates>();
+            return (int_hasher(timedCoordinates.time) << 1) ^ coors_hasher(timedCoordinates.coordinates);
+        }
+    };
+}
+
+template<typename Coordinates>
+using Path = std::vector<TimedCoordinates<Coordinates>>;
+
 template<typename Coordinates, typename Compare = std::greater<Node<Coordinates>>>
-std::vector<std::pair<Coordinates, double>>
+Path<Coordinates>
 astar(Graph<Coordinates> *graph, Coordinates start, Coordinates goal,
       Compare comp = std::greater<Node<Coordinates>>()) {
     auto open = Open<Coordinates>(comp);
     std::unordered_map<Coordinates, Coordinates> real_parent;
-    std::unordered_map<Coordinates, double> dist;
+    std::unordered_map<Coordinates, int> dist;
     auto closed = Closed<Coordinates>();
-    auto start_node = Node<Coordinates>(start, 0.0, 0.0, start);
+    auto start_node = Node<Coordinates>(start, 0, 0.0, start);
     open.add_node(start_node);
     real_parent[start] = start;
     dist[start] = 0.0;
@@ -76,14 +104,14 @@ astar(Graph<Coordinates> *graph, Coordinates start, Coordinates goal,
         closed.add_node(v.coordinates);
         real_parent[v.coordinates] = v.parent;
         dist[v.coordinates] = v.g_value;
-        if (v.coordinates == goal) {
-            std::vector<std::pair<Coordinates, double>> path;
+        if (graph->is_same_point(v.coordinates, goal)) {
+            Path<Coordinates> path;
             auto cur_coors = v.coordinates;
             while (real_parent[cur_coors] != cur_coors) {
-                path.emplace_back(cur_coors, dist[cur_coors]);
+                path.push_back(TimedCoordinates<Coordinates>{cur_coors, dist[cur_coors]});
                 cur_coors = real_parent[cur_coors];
             }
-            path.emplace_back(cur_coors, dist[cur_coors]);
+            path.push_back(TimedCoordinates<Coordinates>{cur_coors, dist[cur_coors]});
             std::reverse(path.begin(), path.end());
             return path;
         }
@@ -96,7 +124,7 @@ astar(Graph<Coordinates> *graph, Coordinates start, Coordinates goal,
             }
         }
     }
-    return std::vector<std::pair<Coordinates, double>>();
+    return Path<Coordinates>();
 }
 
 #endif //COURSE_PROJECT_ASTAR_H
