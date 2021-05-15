@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.19)
 project(course_project)
-find_package(GTest REQUIRED)
 
+link_libraries(gtest)
 set(CMAKE_CXX_STANDARD 17)
 add_compile_options(-Wall -Wextra)
 
@@ -10,5 +10,5 @@ add_executable(course_project main.cpp graph.h astar.h cbs.h cbs.cpp task.cpp ta
 
 enable_testing()
 add_executable(mytest test/test_astar.cpp)
-target_link_libraries(mytest cppunit ${CMAKE_DL_LIBS})
+target_link_libraries(mytest cppunit)
 add_test(NAME mytest COMMAND mytest)

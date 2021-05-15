@@ -7,31 +7,31 @@
 
 struct Pos {
 public:
-    Pos(int i, int j) {
-        this->x = i;
-        this->y = j;
-    }
-    bool operator==(Pos const& b) {
+    bool operator==(Pos const &b) const {
         return std::tie(this->x, this->y) < std::tie(b.x, b.y);
     }
-    bool operator<(Pos const& b) const {
+
+    bool operator<(Pos const &b) const {
         return x < b.x || (x == b.x && y < b.y);
     }
-    bool operator!=(Pos const& b) {
+
+    bool operator!=(Pos const &b) const {
         return std::tie(x, y) != std::tie(b.x, b.y);
     }
+
     int x;
     int y;
 };
 
 namespace std {
 
-    template<> struct hash<Pos> {
-    size_t operator()(const Pos &pos) const {
-        auto int_hasher = hash<int>();
-        return (int_hasher(pos.x) << 1) ^ int_hasher(pos.y);
-    }
-};
+    template<>
+    struct hash<Pos> {
+        size_t operator()(const Pos &pos) const {
+            auto int_hasher = hash<int>();
+            return (int_hasher(pos.x) << 1) ^ int_hasher(pos.y);
+        }
+    };
 
 }
 
@@ -41,7 +41,7 @@ public:
     int width = 0;
     int height = 0;
 
-    static Map fromMovingAI(const std::filesystem::path& path) {
+    static Map fromMovingAI(const std::filesystem::path &path) {
         Map result;
 
         std::ifstream inp(path);
@@ -93,16 +93,16 @@ public:
     std::vector<Pos> get_neighbours(Pos coors) override {
         std::vector<Pos> neighbours = std::vector<Pos>();
         if (coors.x - 1 >= 0) {
-            neighbours.emplace_back(coors.x - 1, coors.y);
+            neighbours.push_back({coors.x - 1, coors.y});
         }
         if (coors.y - 1 >= 0) {
-            neighbours.emplace_back(coors.x, coors.y - 1);
+            neighbours.push_back({coors.x, coors.y - 1});
         }
         if (coors.x + 1 < height) {
-            neighbours.emplace_back(coors.x + 1, coors.y);
+            neighbours.push_back({coors.x + 1, coors.y});
         }
         if (coors.y + 1 < width) {
-            neighbours.emplace_back(coors.x + 1, coors.y);
+            neighbours.push_back({coors.x + 1, coors.y});
         }
         return neighbours;
     }
