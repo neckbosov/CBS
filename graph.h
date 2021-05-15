@@ -6,6 +6,7 @@
 #define COURSE_PROJECT_GRAPH_H
 
 #include <vector>
+#include <string>
 
 template<typename Coordinates>
 class Node {
