@@ -5,10 +5,12 @@
 #include <fstream>
 #include "graph.h"
 
+using std::vector;
+
 struct Pos {
 public:
     bool operator==(Pos const &b) const {
-        return std::tie(this->x, this->y) < std::tie(b.x, b.y);
+        return this->x == b.x && this->y == b.y;
     }
 
     bool operator<(Pos const &b) const {
@@ -16,7 +18,11 @@ public:
     }
 
     bool operator!=(Pos const &b) const {
-        return std::tie(x, y) != std::tie(b.x, b.y);
+        return !(*this == b);
+    }
+
+    Pos operator+(const Pos &other) const {
+        return Pos{x + other.x, y + other.y};
     }
 
     int x;
@@ -45,6 +51,9 @@ public:
         Map result;
 
         std::ifstream inp(path);
+        if (!inp.is_open()) {
+            throw std::invalid_argument("unknown path");
+        }
         std::string data;
 
         std::getline(inp, data);
@@ -75,7 +84,7 @@ public:
             if (data.length() != static_cast<std::size_t>(width))
                 throw std::invalid_argument("map's width does not match the content's width");
             for (int j = 0; j < width; j++)
-                result.map[i][j] = data[j] == '.' || data[j] == 'G' || data[j] == 'S' || data[j] == 'W';
+                result.map[i][j] = (data[j] == '.' || data[j] == 'G' || data[j] == 'S' || data[j] == 'W');
         }
 
         return result;
@@ -91,20 +100,20 @@ public:
 
     // get 4-conn neighbours for CBS
     std::vector<Pos> get_neighbours(Pos coors) override {
-        std::vector<Pos> neighbours = std::vector<Pos>();
-        if (coors.x - 1 >= 0) {
-            neighbours.push_back({coors.x - 1, coors.y});
+        vector<Pos> directions{{0,  1},
+                               {1,  0},
+                               {0,  -1},
+                               {-1, 0}};
+        vector<Pos> res;
+        for (Pos mv: directions) {
+            Pos cur_cell = coors + mv;
+            if (cur_cell.x >= 0 && cur_cell.x < (int) map.size() && cur_cell.y >= 0 &&
+                cur_cell.y < (int) map.back().size() && map[cur_cell.x][cur_cell.y]) {
+                res.push_back(cur_cell);
+            }
+
         }
-        if (coors.y - 1 >= 0) {
-            neighbours.push_back({coors.x, coors.y - 1});
-        }
-        if (coors.x + 1 < height) {
-            neighbours.push_back({coors.x + 1, coors.y});
-        }
-        if (coors.y + 1 < width) {
-            neighbours.push_back({coors.x + 1, coors.y});
-        }
-        return neighbours;
+        return res;
     }
 };
 

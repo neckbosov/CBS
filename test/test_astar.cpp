@@ -2,8 +2,8 @@
 // Created by olgashimanskaia on 15.05.2021.
 //
 
-#include "../astar.h"
-#include "../map.h"
+#include "astar.h"
+#include "map.h"
 
 #include <gtest/gtest.h>
 #include <iostream>
@@ -39,10 +39,10 @@ TEST(AStarTest, kek) {
 }
 
 TEST(AStarTest, Dijkstra) {
-    Map map = Map::fromMovingAI("data/sample-moving-ai.map");
+    Map map = Map::fromMovingAI("../data/sample-moving-ai.map");
     auto path = astar(&map, Pos({1, 1}), Pos({1, 3}));
     auto result = count_path_len(&map, path);
-    ASSERT_TRUE(std::abs(result - 4.0) < 1e-9);
+    ASSERT_DOUBLE_EQ(result, 4.0);
     ASSERT_TRUE(path.size() > 2);
     ASSERT_TRUE(path[0].coordinates == Pos({1, 1}));
     ASSERT_TRUE(path.back().coordinates == Pos({1, 3}));
