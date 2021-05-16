@@ -90,7 +90,7 @@ astar(Graph<Coordinates> *graph, Coordinates start, Coordinates goal,
       Compare comp = std::greater<Node<Coordinates>>()) {
     auto open = Open<Coordinates>(comp);
     std::unordered_map<Coordinates, Coordinates> real_parent;
-    std::unordered_map<Coordinates, int> dist;
+    std::unordered_map<Coordinates, double> dist;
     auto closed = Closed<Coordinates>();
     auto start_node = Node<Coordinates>(start, 0, 0.0, start);
     open.add_node(start_node);

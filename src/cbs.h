@@ -55,7 +55,7 @@ class AStarGridGraph : public Graph<Cell> {
 public:
     vector<vector<int>> &source_cells;
 
-    int get_cost(Cell a, Cell b) override;
+    double get_cost(Cell a, Cell b) override;
 
     double get_h_value(Cell goal, Cell current_coors) override;
 
@@ -71,7 +71,7 @@ public:
     vector<vector<int>> &source_cells;
     std::unordered_set<TimedCell> &banned_cells;
 
-    int get_cost(TimedCell a, TimedCell b) override;
+    double get_cost(TimedCell a, TimedCell b) override;
 
     double get_h_value(TimedCell goal, TimedCell current_coors) override;
 

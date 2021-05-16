@@ -10,7 +10,7 @@
 using std::vector;
 
 
-int AStarGridGraph::get_cost(Cell a, Cell b) {
+double AStarGridGraph::get_cost(Cell a, Cell b) {
     return 1;
 }
 
@@ -39,7 +39,7 @@ std::vector<Cell> AStarGridGraph::get_neighbours(Cell coors) {
 }
 
 
-int CBSLowLevelGraph::get_cost(TimedCell a, TimedCell b) {
+double CBSLowLevelGraph::get_cost(TimedCell a, TimedCell b) {
     return 1;
 }
 
