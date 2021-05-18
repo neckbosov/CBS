@@ -8,8 +8,8 @@
 
 class Task {
 public:
-    const Pos start;
-    const Pos finish;
+    const Cell start;
+    const Cell finish;
 
     static std::vector<Task> fromMovingAI(const std::filesystem::path&);
 
@@ -18,7 +18,7 @@ protected:
     Task() = default;
     Task(std::string mapName,
              std::size_t mapHeight, std::size_t mapWidth,
-             Pos from, Pos to, double bestDistance);
+             Cell from, Cell to, double bestDistance);
 
     const std::size_t mapHeight;
     const std::size_t mapWidth;

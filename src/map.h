@@ -5,47 +5,14 @@
 #include <fstream>
 #include "graph.h"
 #include "iostream"
+#include "cbs.h"
 #include <algorithm>
 #include <cmath>
 #include <string>
 
 using std::vector;
 
-struct Pos {
-public:
-    bool operator==(Pos const &b) const {
-        return this->x == b.x && this->y == b.y;
-    }
-
-    bool operator<(Pos const &b) const {
-        return x < b.x || (x == b.x && y < b.y);
-    }
-
-    bool operator!=(Pos const &b) const {
-        return !(*this == b);
-    }
-
-    Pos operator+(const Pos &other) const {
-        return Pos{x + other.x, y + other.y};
-    }
-
-    int x;
-    int y;
-};
-
-namespace std {
-
-    template<>
-    struct hash<Pos> {
-        size_t operator()(const Pos &pos) const {
-            auto int_hasher = hash<int>();
-            return (int_hasher(pos.x) << 1) ^ int_hasher(pos.y);
-        }
-    };
-
-}
-
-class Map : public Graph<Pos> {
+class Map : public Graph<Cell> {
 private:
     static void removeNewLine(std::string &data) {
         if (!data.empty() && (data[data.length() - 1] == '\n' || (int) data[data.length() - 1] == 13)) {
@@ -100,25 +67,25 @@ public:
         }
     }
 
-    double get_cost(Pos a, Pos b) override {
+    double get_cost(Cell a, Cell b) override {
         return 1;
     }
 
     // euclidean metric
-    double get_h_value(Pos goal, Pos current_coors) override {
+    double get_h_value(Cell goal, Cell current_coors) override {
         return std::sqrt((double) abs(goal.x - current_coors.x) * abs(goal.x - current_coors.x) +
                          (double) abs(goal.y - current_coors.y) * abs(goal.y - current_coors.y));
     }
 
     // get 4-conn neighbours for CBS
-    std::vector<Pos> get_neighbours(Pos coors) override {
-        vector<Pos> directions{{0,  1},
+    std::vector<Cell> get_neighbours(Cell coors) override {
+        vector<Cell> directions{{0,  1},
                                {1,  0},
                                {0,  -1},
                                {-1, 0}};
-        vector<Pos> res;
-        for (Pos mv: directions) {
-            Pos cur_cell = coors + mv;
+        vector<Cell> res;
+        for (Cell mv: directions) {
+            Cell cur_cell = coors + mv;
             if (cur_cell.x >= 0 && cur_cell.x < (int) map.size() && cur_cell.y >= 0 &&
                 cur_cell.y < (int) map.back().size() && map[cur_cell.x][cur_cell.y]) {
                 res.push_back(cur_cell);
@@ -126,6 +93,18 @@ public:
 
         }
         return res;
+    }
+
+    std::vector<std::string> generate_raw_grid() {
+        std::vector<std::string> raw_grid = std::vector<std::string>();
+        for (const auto &line: map) {
+            std::stringstream raw_grid_line;
+            for (const auto &cell: line) {
+                raw_grid_line << (cell ? '.' : '#');
+            }
+            raw_grid.push_back(raw_grid_line.str());
+        }
+        return raw_grid;
     }
 };
 
@@ -136,36 +115,36 @@ public:
 
     }
 
-    double get_cost(Pos a, Pos b) override {
+    double get_cost(Cell a, Cell b) override {
         return std::sqrt((double) std::abs(a.x - b.x) * std::abs(a.x - b.x) +
                          (double) std::abs(a.y - b.y) * std::abs(a.y - b.y));
     }
 
     // get 8-conn neighbours for testing AStar
-    std::vector<Pos> get_neighbours(Pos coors) override {
-        vector<Pos> directions{{0,  1},
+    std::vector<Cell> get_neighbours(Cell coors) override {
+        vector<Cell> directions{{0,  1},
                                {1,  0},
                                {0,  -1},
                                {-1, 0},};
-        vector<Pos> diagDirections{{1,  1},
+        vector<Cell> diagDirections{{1,  1},
                                    {-1, -1},
                                    {1,  -1},
                                    {-1, 1}};
-        vector<Pos> res;
-        for (Pos mv: directions) {
-            Pos cur_cell = coors + mv;
+        vector<Cell> res;
+        for (Cell mv: directions) {
+            Cell cur_cell = coors + mv;
             if (cur_cell.x >= 0 && cur_cell.x < (int) map.size() && cur_cell.y >= 0 &&
                 cur_cell.y < (int) map.back().size() && map[cur_cell.x][cur_cell.y]) {
                 res.push_back(cur_cell);
             }
 
         }
-        for (Pos mv: diagDirections) {
-            Pos cur_cell = coors + mv;
+        for (Cell mv: diagDirections) {
+            Cell cur_cell = coors + mv;
             if (cur_cell.x >= 0 && cur_cell.x < (int) map.size() && cur_cell.y >= 0 &&
                 cur_cell.y < (int) map.back().size() && map[cur_cell.x][cur_cell.y] &&
-                (std::find(res.begin(), res.end(), Pos({cur_cell.x - mv.x, cur_cell.y})) != res.end()) &&
-                (std::find(res.begin(), res.end(), Pos({cur_cell.x, cur_cell.y - mv.y})) != res.end())) {
+                (std::find(res.begin(), res.end(), Cell({cur_cell.x - mv.x, cur_cell.y})) != res.end()) &&
+                (std::find(res.begin(), res.end(), Cell({cur_cell.x, cur_cell.y - mv.y})) != res.end())) {
                 res.push_back(cur_cell);
             }
         }

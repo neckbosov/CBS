@@ -21,14 +21,14 @@ protected:
 
 TEST(AStarTest, AStarSimple) {
     Map map = Map("../data/maps/one-way-simple.map");
-    std::vector<Task> tasks = Task::fromMovingAI("../data/scens/one-way-simple.scen");
-    ASSERT_TRUE(tasks.size() == 1);
-    Task task = tasks[0];
-    auto path = astar(&map, task.start, task.finish);
-    auto result = count_path_len(&map, path);
-    ASSERT_TRUE(std::abs(result - task.bestDistance) < EPS);
-    ASSERT_TRUE(path[0].coordinates == task.start);
-    ASSERT_TRUE(path.back().coordinates == task.finish);
+    std::vector<Task> tasks = Task::fromMovingAI("../data/scens/astar/one-way-simple.scen");
+    for (const auto &task:tasks) {
+        auto path = astar(&map, task.start, task.finish);
+        auto result = count_path_len(&map, path);
+        ASSERT_TRUE(std::abs(result - task.bestDistance) < EPS);
+        ASSERT_TRUE(path[0].coordinates == task.start);
+        ASSERT_TRUE(path.back().coordinates == task.finish);
+    }
 }
 
 TEST(AStarTest, AStarMaze) {

@@ -141,4 +141,19 @@ double count_path_len(Graph<Coordinates> *graph, Path<Coordinates> path) {
     return len;
 }
 
+template<typename Coordinates, typename Compare = std::greater<Node<Coordinates>>>
+bool is_path_correct(Graph<Coordinates> *graph, Path<Coordinates> path) {
+    if (path.empty()) {
+        return false;
+    }
+    Coordinates prev = path[0].coordinates;
+    for (auto i = 1; i < path.size(); i++) {
+        std::vector<Coordinates> neighbours = graph->get_neighbours(prev);
+        if (std::find(neighbours.begin(), neighbours.end(), path[i].coordinates) == neighbours.end())
+            return false;
+        prev = path[i].coordinates;
+    }
+    return true;
+}
+
 #endif //COURSE_PROJECT_ASTAR_H
