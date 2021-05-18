@@ -4,4 +4,4 @@ project(course_project)
 set(CMAKE_CXX_STANDARD 17)
 add_compile_options(-Wall -Wextra)
 
-add_executable(course_project main.cpp graph.h astar.h cbs.h cbs.cpp)
+add_executable(course_project main.cpp graph.h astar.h ecbs.h ecbs.cpp cbs.h cbs.cpp)
