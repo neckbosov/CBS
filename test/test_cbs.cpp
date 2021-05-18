@@ -42,7 +42,7 @@ TEST(CBSTest, CBSMaze) {
     MapAStar map = MapAStar("../data/maps/mapf/maze-32-32-2.map");
     std::vector<Task> tasks = Task::fromMovingAI("../data/scens/mapf/maze-32-32-2-even-1.scen");
     std::vector<Task> firstNTasks = std::vector<Task>();
-    for (int i = 0; i < fmin(7, (int)tasks.size()); i++) { // TODO 7 agents are working, but >7 are not (CBS returns zero paths)
+    for (int i = 0; i < fmin(42, (int)tasks.size()); i++) {
         firstNTasks.push_back(tasks[i]);
     }
     auto cbs = CBS(map.generate_raw_grid());

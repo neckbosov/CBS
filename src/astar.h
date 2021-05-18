@@ -148,7 +148,16 @@ bool is_path_correct(Graph<Coordinates> *graph, Path<Coordinates> path) {
     }
     Coordinates prev = path[0].coordinates;
     for (auto i = 1; i < path.size(); i++) {
+        if (prev == path[i].coordinates) {
+            continue;
+        }
         std::vector<Coordinates> neighbours = graph->get_neighbours(prev);
+//        std::cout << "prev coordinates" << prev.x << ' ' << prev.y << std::endl;
+//        std::cout << "neighbours" << std::endl;
+//        for (auto v : neighbours) {
+//            std::cout << v.x << ' ' << v.y << std::endl;
+//        }
+//        std::cout << "current coors: " << path[i].coordinates.x << ' ' << path[i].coordinates.y << std::endl;
         if (std::find(neighbours.begin(), neighbours.end(), path[i].coordinates) == neighbours.end())
             return false;
         prev = path[i].coordinates;
