@@ -360,6 +360,18 @@ vector<Path<Cell>> ECBS::find_paths(const vector<std::pair<Cell, Cell>> &tasks) 
                         break;
                     }
                 }
+            }  else if (high_f1_min == old_f1_min && focal.empty()) {
+                auto iter = open.begin();
+                auto iter_end = open.end();
+                for(; iter != iter_end; ++ iter) {
+                    auto val = iter->LB;
+                    if (val <= high_f1_min * w) {
+                        focal.push(*iter);
+                    }
+                    if (val > high_f1_min * w) {
+                        break;
+                    }
+                }
             }
         }
         auto v = focal.top();

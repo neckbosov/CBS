@@ -33,6 +33,17 @@ int main() {
 
     auto start = Cell{0, 0};
     auto goal = Cell{2, 2};
-    vector<std::pair<Cell, Cell>> tasks = {{start, goal}, {goal, start}};
-    ecbs.find_paths(tasks);
+    auto start2 = Cell{2, 0};
+    auto goal2 = Cell{1, 2};
+    vector<std::pair<Cell, Cell>> tasks = {{start, goal}, {goal, start}, {start2, goal2}};
+    auto solution = ecbs.find_paths(tasks);
+    int id = 0;
+    for (const auto& s: solution) {
+        id += 1;
+        std::cout << "id " << id << '\n';
+        for (auto c: s) {
+            std::cout << "{" << c.coordinates.x << ", " << c.coordinates.y << '}' << "@" << c.time << ' ';
+        }
+        std::cout << '\n';
+    }
 }
