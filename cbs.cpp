@@ -46,8 +46,7 @@ int CBSLowLevelGraph::get_cost(TimedCell a, TimedCell b) {
 double CBSLowLevelGraph::get_h_value(TimedCell goal, TimedCell current_coors) {
     return hypot(
             abs(goal.coordinates.x - current_coors.coordinates.x),
-            abs(goal.coordinates.y - current_coors.coordinates.y),
-            abs(goal.time - current_coors.time)
+            abs(goal.coordinates.y - current_coors.coordinates.y)
     );
 }
 
@@ -118,7 +117,7 @@ void CBSHighLevelNode::update_cost() {
 Conflict CBSHighLevelNode::find_conflict() const {
     std::unordered_map<TimedCell, size_t> visits;
     for (size_t i = 0; i < solution.size(); i++) {
-        for (auto coors: solution[i]) {
+        for (TimedCell coors: solution[i]) {
             auto it = visits.find(coors);
             if (it != visits.end()) {
                 return std::tuple(i, it->second, it->first);

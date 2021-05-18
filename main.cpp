@@ -1,9 +1,9 @@
 #include <iostream>
 #include "graph.h"
-#include "astar.h"
 #include <unordered_map>
 //#include "cbs.h"
 #include <vector>
+#include "ecbs.h"
 
 class SimpleGraph : public Graph<int> {
 public:
@@ -23,21 +23,16 @@ public:
     }
 };
 
+
 int main() {
-    auto gr = SimpleGraph();
-    gr.weights.resize(10);
-    gr.g.resize(10);
-    gr.g[1].push_back(2);
-    gr.g[1].push_back(3);
-    gr.g[2].push_back(4);
-    gr.g[3].push_back(4);
-    gr.weights[1][2] = 1;
-    gr.weights[1][3] = 2;
-    gr.weights[2][4] = 3;
-    gr.weights[3][4] = 1;
-    auto path = astar(&gr, 1, 4);
-    for (auto[x, w]: path) {
-        std::cout << x << ' ' << w << '\n';
-    }
-    return 0;
+    vector<std::string> raw_grid;
+    raw_grid.emplace_back("...");
+    raw_grid.emplace_back("...");
+    raw_grid.emplace_back("...");
+    auto ecbs = ECBS(1.0, raw_grid);
+
+    auto start = Cell{0, 0};
+    auto goal = Cell{2, 2};
+    vector<std::pair<Cell, Cell>> tasks = {{start, goal}, {goal, start}};
+    ecbs.find_paths(tasks);
 }
