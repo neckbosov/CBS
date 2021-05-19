@@ -18,7 +18,7 @@ protected:
     virtual void SetUp() {} //sets up before each test (after constructor)
     virtual void TearDown() {} //clean up after each test, (before destructor)
 };
-
+/*
 TEST(AStarTest, AStarSimple) {
     Map map = Map("../data/maps/one-way-simple.map");
     std::vector<Task> tasks = Task::fromMovingAI("../data/scens/astar/one-way-simple.scen");
@@ -55,4 +55,4 @@ TEST(AStarTest, AStarBoston) {
         ASSERT_TRUE(path[0].coordinates == task.start);
         ASSERT_TRUE(path.back().coordinates == task.finish);
     }
-}
+}*/
