@@ -1,7 +1,6 @@
 #include <iostream>
 #include "graph.h"
 #include <unordered_map>
-//#include "cbs.h"
 #include <vector>
 #include "ecbs.h"
 
@@ -10,7 +9,7 @@ public:
     std::vector<std::unordered_map<int, int>> weights;
     std::vector<std::vector<int>> g;
 
-    int get_cost(int a, int b) override {
+    double get_cost(int a, int b) override {
         return weights[a][b];
     }
 

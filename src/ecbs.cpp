@@ -200,8 +200,8 @@ Path<Cell> low_level_ecbs(Graph<TimedCell> *graph, TimedCell start, TimedCell go
 
         auto v = focal.top();
 
-        std::cout << "focal size " << focal.size() << " open size " << open.size() << '\n';
-        std::cout << v.coordinates.coordinates.x << ' ' << v.coordinates.coordinates.y << ' ' << v.coordinates.time << " opened\n";
+//      std::cout << "focal size " << focal.size() << " open size " << open.size() << '\n';
+//      std::cout << v.coordinates.coordinates.x << ' ' << v.coordinates.coordinates.y << ' ' << v.coordinates.time << " opened\n";
         focal.pop();
         open.erase(v);
 
@@ -233,7 +233,7 @@ Path<Cell> low_level_ecbs(Graph<TimedCell> *graph, TimedCell start, TimedCell go
                                                                  : vector<std::pair<Cell, int>>(),
                                                                  x);
 
-                std:: cout << x.coordinates.x << ' ' << x.coordinates.y << ' ' << x.time << " added to open\n";
+//              std:: cout << x.coordinates.x << ' ' << x.coordinates.y << ' ' << x.time << " added to open\n";
                 auto nodeX = FocalNode(x, time,
                                                graph->get_h_value(goal, x),
                                                v.coordinates,
