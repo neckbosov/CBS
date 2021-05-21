@@ -20,12 +20,20 @@ ECBS::ECBS(double w, vector<std::string> raw_grid): w(w) {
     }
 }
 
-
+std::string showPath(const Path<Cell>& path) {
+    std::string printablePath = std::string("asd") + std::string("asd");
+    for(auto cell: path){
+        printablePath += std::string("(") + std::to_string(cell.coordinates.x) +
+                std::string(", ") + std::to_string(cell.coordinates.y) +
+                std::string(") @ ") + std::to_string(cell.time) + std::string(" ");
+    }
+    return printablePath;
+}
 
 class FocalNode {
 public:
     TimedCell coordinates;
-    int g_value;
+    double g_value;
     double h_value;
     double f_value;
     TimedCell parent;
@@ -35,7 +43,7 @@ public:
         return coordinates == other.coordinates;
     }
 
-    FocalNode(TimedCell coordinates1, int g_value1, double h_value1, TimedCell parent1, double focal_heuristic1) {
+    FocalNode(TimedCell coordinates1, double g_value1, double h_value1, TimedCell parent1, double focal_heuristic1) {
         g_value = g_value1;
         coordinates = coordinates1;
         h_value = h_value1;
