@@ -48,26 +48,26 @@ TEST(CBSTest, CBSSimple) {
 }
 
 TEST(CBSTest, CBSBostonSmall1) {
-    CBSTest::testCBS("../data/maps/mapf/maze-32-32-2.map",
-                     "../data/scens/mapf/maze-32-32-2-even-1.scen",
+    CBSTest::testCBS("../data/maps/mapf/Boston.map",
+                     "../data/scens/mapf/Boston.scen",
                      0, 5);
 }
 
 TEST(CBSTest, CBSBostonSmall2) {
-    CBSTest::testCBS("../data/maps/mapf/maze-32-32-2.map",
-                     "../data/scens/mapf/maze-32-32-2-even-1.scen",
+    CBSTest::testCBS("../data/maps/mapf/Boston.map",
+                     "../data/scens/mapf/Boston.scen",
                      10, 15);
 }
 
 TEST(CBSTest, CBSBostonSmall3) {
-    CBSTest::testCBS("../data/maps/mapf/maze-32-32-2.map",
-                     "../data/scens/mapf/maze-32-32-2-even-1.scen",
+    CBSTest::testCBS("../data/maps/mapf/Boston.map",
+                     "../data/scens/mapf/Boston.scen",
                      300, 306);
 }
 
 TEST(CBSTest, CBSBostonSmall4) {
-    CBSTest::testCBS("../data/maps/mapf/maze-32-32-2.map",
-                     "../data/scens/mapf/maze-32-32-2-even-1.scen",
+    CBSTest::testCBS("../data/maps/mapf/Boston.map",
+                     "../data/scens/mapf/Boston.scen",
                      350, 357);
 }
 
