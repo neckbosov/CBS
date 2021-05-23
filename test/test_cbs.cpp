@@ -68,7 +68,7 @@ TEST(CBSTest, CBSBostonSmall3) {
 TEST(CBSTest, CBSBostonSmall4) {
     CBSTest::testCBS("../data/maps/mapf/Boston.map",
                      "../data/scens/mapf/Boston.scen",
-                     350, 357);
+                     350, 354);
 }
 
 TEST(CBSTest, CBSMazeSmall1) {
