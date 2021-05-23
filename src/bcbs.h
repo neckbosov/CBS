@@ -27,11 +27,20 @@ struct BCBSHighLevelNode {
         }
     }
 
+    bool operator==(const BCBSHighLevelNode &other) const {
+        return id == other.id;
+    }
+
+    bool operator!=(const BCBSHighLevelNode &other) const {
+        return !(*this == other);
+    }
+
     explicit BCBSHighLevelNode(size_t actors, int id);
 
     BCBSHighLevelNode(const BCBSHighLevelNode &other);
 
     void update_cost();
+
     void update_h();
 
     Conflict find_conflict() const;
