@@ -38,12 +38,12 @@ static void testECBS(std::string mapFilename, std::string scenFilename, int task
     for (int i = taskStart; i < fmin(taskFinish, (int)tasks.size()); i++) {
         firstNTasks.push_back(tasks[i]);
     }
-    auto cbs = ECBS(1.0, map.generate_raw_grid());
+    auto cbs = ECBS(1.5, map.generate_raw_grid());
     std::vector<std::pair<Cell, Cell>> cell_tasks = std::vector<std::pair<Cell, Cell>>();
     for (const auto&task:firstNTasks) {
         cell_tasks.emplace_back(Cell({task.start.x, task.start.y}), Cell({task.finish.x, task.finish.y}));
     }
-    auto paths = cbs.find_paths(cell_tasks);
+    auto paths = cbs.findPaths(cell_tasks);
     int id = 0;
     for (const auto& s: paths) {
         id += 1;
@@ -67,23 +67,23 @@ int main() {
     raw_grid.emplace_back("...");
     raw_grid.emplace_back("...");
     raw_grid.emplace_back("...");
-    auto ecbs = ECBS(1.0, raw_grid);
+    auto ecbs = ECBS(1.5, raw_grid);
 
     auto start = Cell{0, 0};
     auto goal = Cell{2, 2};
     auto start2 = Cell{2, 0};
     auto goal2 = Cell{1, 2};
-    vector<std::pair<Cell, Cell>> tasks = {{start, goal}, {goal, start}, {start2, goal2}};
-    auto solution = ecbs.find_paths(tasks);
-    int id = 0;
-    for (const auto& s: solution) {
-        id += 1;
-        std::cout << "id " << id << '\n';
-        for (auto c: s) {
-            std::cout << "{" << c.coordinates.x << ", " << c.coordinates.y << '}' << "@" << c.time << ' ';
-        }
-        std::cout << '\n';
-    }
+    vector<std::pair<Cell, Cell>> tasks = {{start, goal}, {goal, start}};
+//    auto solution = ecbs.findPaths(tasks);
+//    int id = 0;
+//    for (const auto& s: solution) {
+//        id += 1;
+//        std::cout << "id " << id << '\n';
+//        for (auto c: s) {
+//            std::cout << "{" << c.coordinates.x << ", " << c.coordinates.y << '}' << "@" << c.time << ' ';
+//        }
+//        std::cout << '\n';
+//    }
 
 
 //        testECBS("../data/maps/mapf/maze-32-32-2.map",
@@ -93,7 +93,7 @@ int main() {
         testECBS("../data/maps/mapf/maze-32-32-2.map",
                            "../data/scens/mapf/maze-32-32-2-even-1.scen",
                            50, 60);
-////
+//////
 //        testECBS("../data/maps/mapf/maze-32-32-2.map",
 //                           "../data/scens/mapf/maze-32-32-2-even-1.scen",
 //                           300, 306);
