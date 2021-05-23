@@ -41,12 +41,36 @@ struct Cell {
 
 using TimedCell = TimedCoordinates<Cell>;
 
+struct TimedEdge {
+    TimedCell first;
+    TimedCell second;
+
+    bool operator==(const TimedEdge &other) const {
+        return (first == other.first && second == other.second) ||
+               (first.time == other.first.time && second.time == other.second.time &&
+                first.coordinates == other.second.coordinates && second.coordinates == other.first.coordinates);
+    }
+
+    bool operator!=(const TimedEdge &other) const {
+        return !(*this == other);
+    }
+};
+
 namespace std {
     template<>
     struct hash<Cell> {
         size_t operator()(const Cell &cell) const {
             auto int_hasher = hash<int>();
             return (int_hasher(cell.x) << 1) ^ int_hasher(cell.y);
+        }
+    };
+
+    template<>
+    struct hash<TimedEdge> {
+
+        size_t operator()(const TimedEdge &edge) const {
+            auto timed_cell_hasher = hash<TimedCell>();
+            return (timed_cell_hasher(edge.first) << 1) ^ timed_cell_hasher(edge.second);
         }
     };
 }
@@ -70,6 +94,7 @@ class CBSLowLevelGraph : public Graph<TimedCell> {
 public:
     vector<vector<int>> &source_cells;
     std::unordered_set<TimedCell> &banned_cells;
+    std::unordered_set<TimedEdge> &banned_edges;
 
     double get_cost(TimedCell a, TimedCell b) override;
 
@@ -79,18 +104,22 @@ public:
 
     bool is_same_point(TimedCell a, TimedCell b) override;
 
-    explicit CBSLowLevelGraph(vector<vector<int>> &cells, std::unordered_set<TimedCell> &banned) : source_cells(cells),
-                                                                                                   banned_cells(
-                                                                                                           banned) {}
+    explicit CBSLowLevelGraph(
+            vector<vector<int>> &cells,
+            std::unordered_set<TimedCell> &banned_cells,
+            std::unordered_set<TimedEdge> &banned_edges
+    ) : source_cells(cells), banned_cells(banned_cells), banned_edges(banned_edges) {}
 
     CBSLowLevelGraph(vector<vector<int>> &&, std::unordered_set<TimedCell> &&) = delete;
 };
 
-using Conflict = std::optional<std::tuple<size_t, size_t, TimedCell>>;
+using VertexConflict = std::optional<std::tuple<size_t, size_t, TimedCell>>;
+using EdgeConflict = std::vector<std::pair<size_t, TimedEdge>>;
 
 struct CBSHighLevelNode {
     vector<Path<Cell>> solution;
     vector<std::unordered_set<TimedCell>> vertex_conflicts;
+    vector<std::unordered_set<TimedEdge>> edge_conflicts;
     std::optional<int> cost;
 
     bool operator>(const CBSHighLevelNode &other) const {
@@ -109,7 +138,9 @@ struct CBSHighLevelNode {
 
     void update_cost();
 
-    Conflict find_conflict() const;
+    VertexConflict find_vertex_conflict() const;
+
+    EdgeConflict find_edge_conflict() const;
 
 };
 
