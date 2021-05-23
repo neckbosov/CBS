@@ -90,7 +90,7 @@ astar(Graph<Coordinates> *graph, Coordinates start, Coordinates goal,
       Compare comp = std::greater<Node<Coordinates>>()) {
     auto open = Open<Coordinates>(comp);
     std::unordered_map<Coordinates, Coordinates> real_parent;
-    std::unordered_map<Coordinates, int> dist;
+    std::unordered_map<Coordinates, double> dist;
     auto closed = Closed<Coordinates>();
     auto start_node = Node<Coordinates>(start, 0, 0.0, start);
     open.add_node(start_node);
@@ -125,6 +125,44 @@ astar(Graph<Coordinates> *graph, Coordinates start, Coordinates goal,
         }
     }
     return Path<Coordinates>();
+}
+
+template<typename Coordinates, typename Compare = std::greater<Node<Coordinates>>>
+double count_path_len(Graph<Coordinates> *graph, Path<Coordinates> path) {
+    if (path.empty()) {
+        return -1.0;
+    }
+    Coordinates prev = path[0].coordinates;
+    double len = 0.0;
+    for (auto i = 1; i < path.size(); i++) {
+        len += graph->get_cost(prev, path[i].coordinates);
+        prev = path[i].coordinates;
+    }
+    return len;
+}
+
+template<typename Coordinates, typename Compare = std::greater<Node<Coordinates>>>
+bool is_path_correct(Graph<Coordinates> *graph, Path<Coordinates> path) {
+    if (path.empty()) {
+        return false;
+    }
+    Coordinates prev = path[0].coordinates;
+    for (auto i = 1; i < path.size(); i++) {
+        if (prev == path[i].coordinates) {
+            continue;
+        }
+        std::vector<Coordinates> neighbours = graph->get_neighbours(prev);
+//        std::cout << "prev coordinates" << prev.x << ' ' << prev.y << std::endl;
+//        std::cout << "neighbours" << std::endl;
+//        for (auto v : neighbours) {
+//            std::cout << v.x << ' ' << v.y << std::endl;
+//        }
+//        std::cout << "current coors: " << path[i].coordinates.x << ' ' << path[i].coordinates.y << std::endl;
+        if (std::find(neighbours.begin(), neighbours.end(), path[i].coordinates) == neighbours.end())
+            return false;
+        prev = path[i].coordinates;
+    }
+    return true;
 }
 
 #endif //COURSE_PROJECT_ASTAR_H

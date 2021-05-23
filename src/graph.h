@@ -6,12 +6,13 @@
 #define COURSE_PROJECT_GRAPH_H
 
 #include <vector>
+#include <string>
 
 template<typename Coordinates>
 class Node {
 public:
     Coordinates coordinates;
-    int g_value;
+    double g_value;
     double h_value;
     double f_value;
     Coordinates parent;
@@ -28,7 +29,7 @@ public:
         g_value = h_value = f_value = 0.0;
     }
 
-    Node(Coordinates coordinates1, int g_value1, double h_value1, Coordinates parent1) {
+    Node(Coordinates coordinates1, double g_value1, double h_value1, Coordinates parent1) {
         g_value = g_value1;
         coordinates = coordinates1;
         h_value = h_value1;
@@ -52,7 +53,7 @@ public:
 
     virtual double get_h_value(Coordinates goal, Coordinates current_coors) = 0;
 
-    virtual int get_cost(Coordinates a, Coordinates b) = 0;
+    virtual double get_cost(Coordinates a, Coordinates b) = 0;
 
     virtual bool is_same_point(Coordinates a, Coordinates b) {
         return a == b;
