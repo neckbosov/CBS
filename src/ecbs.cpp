@@ -411,10 +411,69 @@ vector<Path<Cell>> ECBS::findPaths(const vector<std::pair<Cell, Cell>> &tasks) {
         auto v = focal.top();
         focal.pop();
         open.erase(v);
-        Conflict conflict = v.findConflict();
-
+        VertexConflict conflict = v.findConflict();
+        EdgeConflict  edgeConflict = v.findEdgeConflict();
         if (!conflict.has_value()) {
-            return v.solution;
+            if (edgeConflict.empty()) {
+                return v.solution;
+            }
+            for (auto[actor, edge]: edgeConflict) {
+                auto new_node = v;
+                new_node.edge_conflicts[actor].insert(edge);
+
+                auto left_low_graph = CBSLowLevelGraph(grid, new_node.vertex_conflicts[actor],
+                                                       new_node.edge_conflicts[actor]);
+                double f1_min = 0.0;
+
+                Path<Cell> new_path = lowLevelEcbs(
+                        &left_low_graph, TimedCell{tasks[actor].first, 0},
+                        TimedCell{tasks[actor].second, 0},
+                        w,
+                        actor,
+                        new_node.solution, f1_min);
+                new_node.solution[actor] = Path<Cell>();
+                new_node.LB -= new_node.agent_f1_min[actor];
+                new_node.LB += f1_min;
+                new_node.agent_f1_min[actor] = f1_min;
+
+                {
+                    int newNodeFocalHeuristic = root_node.focal_heuristic - int(agent_conflicts[actor].size() * 2);
+
+                    for (auto conflict_agent: agent_conflicts[actor]) {
+                        agent_conflicts[conflict_agent].erase(actor);
+                    }
+
+                    std::unordered_set<TimedCell> visits_by_agent;
+                    for (auto coors: new_path) {
+                        visits_by_agent.insert(coors);
+                    }
+
+                    for (size_t i = 0; i < root_node.solution.size(); i++) {
+                        if (i == actor) continue;
+                        for (auto cell: root_node.solution[i]) {
+                            if (visits_by_agent.find(cell) != visits_by_agent.end()) {
+                                newNodeFocalHeuristic += 2;
+                                agent_conflicts[actor].insert(i);
+                                agent_conflicts[i].insert(actor);
+                            }
+                        }
+                    }
+                    new_node.focal_heuristic = newNodeFocalHeuristic;
+                }
+
+                for (auto cell: new_path) {
+                    new_node.solution[actor].push_back(cell);
+                }
+
+                if(verbose) {
+                    std::cout << "For actor: " << actor << " new path found: " << showPath(new_node.solution[actor]) << '\n';
+                }
+
+                new_node.updateCost();
+                if (new_node.cost.has_value()) {
+                    open.insert(new_node);
+                }
+            }
         }
 
         auto[actor1, actor2, timedCell] = conflict.value();
@@ -424,7 +483,8 @@ vector<Path<Cell>> ECBS::findPaths(const vector<std::pair<Cell, Cell>> &tasks) {
         for (auto actor: {actor1, actor2}) {
             auto new_node = v;
             new_node.vertex_conflicts[actor].insert(timedCell);
-            auto left_low_graph = CBSLowLevelGraph(grid, new_node.vertex_conflicts[actor]);
+            auto left_low_graph = CBSLowLevelGraph(grid, new_node.vertex_conflicts[actor],
+                                                   new_node.edge_conflicts[actor]);
             double f1_min = 0.0;
 
             Path<Cell> new_path = lowLevelEcbs(
@@ -493,20 +553,17 @@ void ECBSHighLevelNode::updateCost() {
 }
 
 
-//
-//vector<Path<Cell>> ECBS::findPaths(const vector<std::pair<Cell, Cell>> &tasks) {
-//   size_t actors = tasks.size();
-//}
 ECBSHighLevelNode::ECBSHighLevelNode(size_t actors) {
     focal_heuristic = 0;
     LB = 0;
     solution = vector<Path<Cell>>(actors);
     agent_f1_min = vector<double>(actors);
     vertex_conflicts = vector<std::unordered_set<TimedCell>>(actors);
+    edge_conflicts = vector<std::unordered_set<TimedEdge>>(actors);
     cost = 0;
 }
 
-Conflict ECBSHighLevelNode::findConflict() const {
+VertexConflict ECBSHighLevelNode::findConflict() const {
     std::unordered_map<TimedCell, size_t> visits;
     for (size_t i = 0; i < solution.size(); i++) {
         for (TimedCell coors: solution[i]) {
@@ -519,4 +576,25 @@ Conflict ECBSHighLevelNode::findConflict() const {
         }
     }
     return std::nullopt;
+}
+
+
+
+EdgeConflict ECBSHighLevelNode::findEdgeConflict() const {
+    std::unordered_map<TimedEdge, size_t> passes;
+    for (size_t i = 0; i < solution.size(); i++) {
+        for (size_t j = 1; j < solution[i].size(); j++) {
+            auto prev = solution[i][j - 1];
+            auto cur = solution[i][j];
+            auto edge = TimedEdge{prev, cur};
+            auto it = passes.find(edge);
+            if (it != passes.end()) {
+                return EdgeConflict({{i,          edge},
+                                     {it->second, it->first}});
+            } else {
+                passes[edge] = i;
+            }
+        }
+    }
+    return EdgeConflict();
 }
