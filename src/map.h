@@ -22,6 +22,7 @@ private:
 
 public:
     std::vector<std::vector<bool>> map;
+    std::string filename;
     int width = 0;
     int height = 0;
 
@@ -30,6 +31,7 @@ public:
         if (!inp.is_open()) {
             throw std::invalid_argument("unknown path");
         }
+        filename = path.filename().string();
         std::string data;
 
         std::getline(inp, data);
@@ -80,9 +82,9 @@ public:
     // get 4-conn neighbours for CBS
     std::vector<Cell> get_neighbours(Cell coors) override {
         vector<Cell> directions{{0,  1},
-                               {1,  0},
-                               {0,  -1},
-                               {-1, 0}};
+                                {1,  0},
+                                {0,  -1},
+                                {-1, 0}};
         vector<Cell> res;
         for (Cell mv: directions) {
             Cell cur_cell = coors + mv;
@@ -95,7 +97,7 @@ public:
         return res;
     }
 
-    std::vector<std::string> generate_raw_grid() {
+    std::vector<std::string> generate_raw_grid() const {
         std::vector<std::string> raw_grid = std::vector<std::string>();
         for (const auto &line: map) {
             std::stringstream raw_grid_line;
@@ -123,13 +125,13 @@ public:
     // get 8-conn neighbours for testing AStar
     std::vector<Cell> get_neighbours(Cell coors) override {
         vector<Cell> directions{{0,  1},
-                               {1,  0},
-                               {0,  -1},
-                               {-1, 0},};
+                                {1,  0},
+                                {0,  -1},
+                                {-1, 0},};
         vector<Cell> diagDirections{{1,  1},
-                                   {-1, -1},
-                                   {1,  -1},
-                                   {-1, 1}};
+                                    {-1, -1},
+                                    {1,  -1},
+                                    {-1, 1}};
         vector<Cell> res;
         for (Cell mv: directions) {
             Cell cur_cell = coors + mv;

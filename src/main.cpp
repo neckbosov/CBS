@@ -8,10 +8,12 @@
 #include <unordered_map>
 #include <vector>
 #include <algorithm>
-#include <cstring>
+#include <cstdlib>
 #include <cassert>
 #include <random>
+#include <filesystem>
 
+using std::vector;
 
 static void testECBS(std::string mapFilename, std::string scenFilename, int taskStart, int taskFinish) {
     if (mapFilename[0] == '.') {
@@ -50,38 +52,64 @@ static void testECBS(std::string mapFilename, std::string scenFilename, int task
     }
 }
 
+vector<Path<Cell>> run_CBS(const Map &map, const vector<Task> &tasks) {
+    auto cbs = CBS(map.generate_raw_grid());
+    auto cell_tasks = vector<std::pair<Cell, Cell>>();
+    for (const auto &task : tasks) {
+        cell_tasks.emplace_back(Cell({task.start.x, task.start.y}), Cell({task.finish.x, task.finish.y}));
+    }
+    return cbs.find_paths(cell_tasks);
+}
+
+vector<Path<Cell>> run_ECBS(const Map &map, const vector<Task> &tasks, double w) {
+    auto ecbs = ECBS(w, map.generate_raw_grid());
+    auto cell_tasks = vector<std::pair<Cell, Cell>>();
+    for (const auto &task : tasks) {
+        cell_tasks.emplace_back(Cell({task.start.x, task.start.y}), Cell({task.finish.x, task.finish.y}));
+    }
+    return ecbs.find_paths(cell_tasks);
+}
+
+vector<Path<Cell>> run_AFS(const Map &map, const vector<Task> &tasks) {
+    auto afs = AFS_CBS(1.5, map.generate_raw_grid());
+    auto cell_tasks = vector<std::pair<Cell, Cell>>();
+    for (const auto &task : tasks) {
+        cell_tasks.emplace_back(Cell({task.start.x, task.start.y}), Cell({task.finish.x, task.finish.y}));
+    }
+    return afs.find_paths(cell_tasks);
+}
+
 int main(int argc, char **argv) {
-    std::string alg(argv[1]);
-    Map map = Map(argv[2]);
-    std::vector<Task> all_tasks = Task::fromMovingAI(argv[3]);
-    int tasks_count = atoi(argv[4]);
-    int test_num = atoi(argv[5]);
-    std::vector<Task> tasks;
+    std::filesystem::path res_path(argv[1]);
+    std::string alg(argv[2]);
+    Map map = Map(argv[3]);
+    vector<Task> all_tasks = Task::fromMovingAI(argv[4]);
+    int tasks_count = atoi(argv[5]);
+    int test_num = atoi(argv[6]);
+    vector<Task> tasks;
+    vector<size_t> actors;
     auto gen = std::mt19937_64(test_num);
-    std::sample(all_tasks.begin(), all_tasks.end(), std::back_inserter(tasks), tasks_count, gen);
-
-//    vector<std::string> raw_grid;
-//    raw_grid.emplace_back("...");
-//    raw_grid.emplace_back("...");
-//    raw_grid.emplace_back("...");
-//    auto ecbs = ECBS(1.0, raw_grid);
-//
-//    auto start = Cell{0, 0};
-//    auto goal = Cell{2, 2};
-//    auto start2 = Cell{2, 0};
-//    auto goal2 = Cell{1, 2};
-//    vector<std::pair<Cell, Cell>> tasks = {{start,  goal},
-//                                           {goal,   start},
-//                                           {start2, goal2}};
-//    auto solution = ecbs.find_paths(tasks);
-//    int id = 0;
-//    for (const auto &s: solution) {
-//        id += 1;
-//        std::cout << "id " << id << '\n';
-//        for (auto c: s) {
-//            std::cout << "{" << c.coordinates.x << ", " << c.coordinates.y << '}' << "@" << c.time << ' ';
-//        }
-//        std::cout << '\n';
-//    }
-
+    vector<size_t> seq(all_tasks.size());
+    std::iota(seq.begin(), seq.end(), 0);
+    std::sample(seq.begin(), seq.end(), std::back_inserter(actors), tasks_count, gen);
+    for (auto actor : actors) {
+        tasks.push_back(all_tasks[actor]);
+    }
+    vector<Path<Cell>> paths;
+    if (alg == "CBS") {
+        paths = run_CBS(map, tasks);
+    } else if (alg == "ECBS") {
+        double w = atof(argv[7]);
+        paths = run_ECBS(map, tasks, w);
+    } else if (alg == "AFS") {
+        paths = run_AFS(map, tasks);
+    }
+    std::ofstream out(res_path);
+    out << "Actor,x,y,Time\n";
+    for (int i = 0; i < tasks_count; i++) {
+        for (auto cell: paths[i]) {
+            out << actors[i] << ',' << cell.coordinates.x << ',' << cell.coordinates.y << ',' << cell.time << '\n';
+        }
+    }
+    return 0;
 }
