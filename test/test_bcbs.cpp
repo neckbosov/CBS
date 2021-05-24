@@ -9,6 +9,7 @@
 #include <iostream>
 #include <task.h>
 #include <bcbs.h>
+#include "afs_cbs.h"
 
 const double EPS = 1e-6;
 
@@ -21,23 +22,12 @@ public:
         for (int i = taskStart; i < fmin(taskFinish, (int)tasks.size()); i++) {
             firstNTasks.push_back(tasks[i]);
         }
-        auto bcbs = BCBS(map.generate_raw_grid(), 1.5);
-        auto cbs = CBS(map.generate_raw_grid());
+        auto afs = AFS_CBS(1.5, map.generate_raw_grid());
         std::vector<std::pair<Cell, Cell>> cell_tasks = std::vector<std::pair<Cell, Cell>>();
         for (const auto&task:firstNTasks) {
             cell_tasks.emplace_back(Cell({task.start.x, task.start.y}), Cell({task.finish.x, task.finish.y}));
         }
-        auto paths = bcbs.find_paths(cell_tasks);
-        auto cbs_paths = cbs.find_paths(cell_tasks);
-        auto c1 = 0;
-        auto c2 = 0;
-        for (auto path: paths) {
-            c1 += path.back().time;
-        }
-        for (auto path: cbs_paths) {
-            c2 += path.back().time;
-        }
-        std::cout << c1 << ' ' << c2;
+        auto paths = afs.find_paths(cell_tasks);
         ASSERT_EQ(paths.size(), cell_tasks.size());
         for (int i = 0; i < (int)paths.size(); i++) {
             ASSERT_TRUE(paths[i][0].coordinates == cell_tasks[i].first);
@@ -51,6 +41,7 @@ protected:
     virtual void SetUp() {} //sets up before each test (after constructor)
     virtual void TearDown() {} //clean up after each test, (before destructor)
 };
+
 
 TEST(BCBSTest, BCBSSimple) {
     BCBSTest::testBCBS("../data/maps/one-way-simple.map",
@@ -127,10 +118,10 @@ TEST(BCBSTest, BCBSMazeSmall3) {
 TEST(BCBSTest, BCBSMazeSmall4) {
     BCBSTest::testBCBS("../data/maps/mapf/maze-32-32-2.map",
                      "../data/scens/mapf/maze-32-32-2-even-1.scen",
-                     200, 220);
+                     200, 212);
 }
 
-/*
+
 TEST(BCBSTest, BCBSMazeLarge1) {
     BCBSTest::testBCBS("../data/maps/mapf/maze-32-32-2.map",
                      "../data/scens/mapf/maze-32-32-2-even-1.scen",
@@ -153,4 +144,4 @@ TEST(BCBSTest, BCBSMazeLarge4) {
     BCBSTest::testBCBS("../data/maps/mapf/maze-32-32-2.map",
                      "../data/scens/mapf/maze-32-32-2-even-1.scen",
                      56, 90);
-}*/
+}

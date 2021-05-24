@@ -4,6 +4,7 @@
 
 #include "bcbs.h"
 #include <set>
+#include <utility>
 
 BCBS::BCBS(vector<std::string> raw_grid, double weight) {
     size_t n = raw_grid.size();
@@ -19,6 +20,10 @@ BCBS::BCBS(vector<std::string> raw_grid, double weight) {
             }
         }
     }
+}
+
+BCBS::BCBS(vector<vector<int>> grid, double weight): grid(std::move(grid)) {
+    w = weight;
 }
 
 BCBSHighLevelNode::BCBSHighLevelNode(size_t actors, int idd) {
@@ -84,94 +89,4 @@ Conflict BCBSHighLevelNode::find_conflict() const {
         }
     }
     return std::nullopt;
-}
-
-//template<typename T, typename Comp>
-//using BCBSHeap = __gnu_pbds::priority_queue<T, Comp>;
-
-vector<Path<Cell>> BCBS::find_paths(const vector<std::pair<Cell, Cell>> &tasks) {
-    size_t actors = tasks.size();
-    auto low_graph = AStarGridGraph(grid);
-    int id = 0;
-    auto root_node = BCBSHighLevelNode(actors, id);
-    id += 1;
-    for (size_t i = 0; i < actors; i++) {
-        auto[start, goal] = tasks[i];
-        root_node.solution[i] = astar(&low_graph, start, goal);
-    }
-    root_node.update_cost();
-    root_node.update_h();
-
-    auto g = [](const BCBSHighLevelNode &a, const BCBSHighLevelNode &b) {
-        return a.cost < b.cost;
-    };
-
-    auto h_c = [](const BCBSHighLevelNode &a, const BCBSHighLevelNode &b) {
-        return a.h > b.h;
-    };
-
-    std::set<BCBSHighLevelNode, decltype(g)> open(g);
-//    std::unordered_map<int, bool> in_open = {};
-    auto focal = std::priority_queue<BCBSHighLevelNode, vector<BCBSHighLevelNode>, decltype(h_c)>(h_c);
-    open.insert(root_node);
-    focal.push(root_node);
-
-    while (!focal.empty()) {
-//        std::make_heap(open.begin(), open.end(), g);
-        BCBSHighLevelNode min_open = *open.begin();
-//        while (in_open[min_open.id]) {
-//            std::pop_heap(open.begin(), open.end(), g);
-//            open.pop_back();
-//            min_open = open.front();
-//        }
-        if (!min_open.cost.has_value()) {
-            // no solution
-            return vector<Path<Cell>>();
-        }
-        BCBSHighLevelNode node = focal.top();
-        focal.pop();
-        open.erase(node);
-        Conflict conflict = node.find_conflict();
-        if (!conflict.has_value()) {
-            return node.solution;
-        }
-        double cost_min = min_open.cost.value();
-        auto[actor1, actor2, timedCell] = conflict.value();
-        for (auto actor: {actor1, actor2}) {
-            auto new_node = node;
-            new_node.id = id;
-            id++;
-            new_node.vertex_conflicts[actor].insert(timedCell);
-            auto left_low_graph = CBSLowLevelGraph(grid, node.vertex_conflicts[actor]);
-            auto new_path = astar(&left_low_graph, TimedCell{tasks[actor].first, 0},
-                                  TimedCell{tasks[actor].second, 0});
-            new_node.solution[actor] = Path<Cell>();
-            for (auto[cell, new_time]: new_path) {
-                new_node.solution[actor].push_back(TimedCell{cell.coordinates, new_time});
-            }
-            new_node.update_cost();
-            new_node.update_h();
-            if (new_node.cost.has_value()) {
-                open.insert(new_node);
-                if (new_node.cost < w * cost_min) {
-                    focal.push(new_node);
-                }
-            }
-        }
-
-//        std::make_heap(open.begin(), open.end(), g);
-//        while (in_open[open.front().id]) {
-//            std::pop_heap(open.begin(), open.end(), g);
-//            open.pop_back();
-//        }
-        double new_cost_min = open.begin()->cost.value_or(0);
-        if (!open.empty() && cost_min < open.begin()->cost.value_or(0)) {
-            for (const BCBSHighLevelNode &n: open) {
-                if (n.cost > w * cost_min && n.cost <= w * new_cost_min) {
-                    focal.push(n);
-                }
-            }
-        }
-    }
-    return vector<Path<Cell>>();
 }
