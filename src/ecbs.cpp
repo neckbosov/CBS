@@ -58,9 +58,9 @@ public:
     }
 };
 
-size_t low_level_focal_heuristic(size_t agent_id,
-                               const std::vector<std::pair<Cell, int>>& time_conflicts,
-                                 TimedCell node) {
+size_t lowLevelFocalHeuristic(size_t agent_id,
+                              const std::vector<std::pair<Cell, int>>& time_conflicts,
+                              TimedCell node) {
     std::set<size_t> conflict_pairs;
     for (auto [coors, other_agent_id]: time_conflicts) {
         if (coors == node.coordinates) {
@@ -74,8 +74,8 @@ size_t low_level_focal_heuristic(size_t agent_id,
 
 template<typename Coordinates, typename Compare = std::greater<Node<Coordinates>>>
 Path<Coordinates>
-astar_f1min(Graph<Coordinates> *graph, Coordinates start, Coordinates goal,
-            double& f1_min, Compare comp = std::greater<Node<Coordinates>>()) {
+astarF1Min(Graph<Coordinates> *graph, Coordinates start, Coordinates goal,
+           double& f1_min, Compare comp = std::greater<Node<Coordinates>>()) {
     auto open = Open<Coordinates>(comp);
     std::unordered_map<Coordinates, Coordinates> real_parent;
     std::unordered_map<Coordinates, int> dist;
@@ -117,7 +117,7 @@ astar_f1min(Graph<Coordinates> *graph, Coordinates start, Coordinates goal,
 }
 
 bool lowLevelFocalComparator(const FocalNode& a, const FocalNode& b) {
-    return std::make_tuple(a.focal_heuristic, a.f_value, a.g_value, a.h_value, a.coordinates.coordinates.x, a.coordinates.coordinates.y, a.coordinates.time) <
+    return std::make_tuple(a.focal_heuristic, a.f_value, a.g_value, a.h_value, a.coordinates.coordinates.x, a.coordinates.coordinates.y, a.coordinates.time) >
             std::make_tuple(b.focal_heuristic, b.f_value, b.g_value, b.h_value, b.coordinates.coordinates.x, b.coordinates.coordinates.y, b.coordinates.time);
 }
 
@@ -176,7 +176,7 @@ Path<Cell> lowLevelEcbs(Graph<TimedCell> *graph, TimedCell start, TimedCell goal
     std::set<FocalNode, decltype(f1)> open(f1);
     auto focal = std::priority_queue<FocalNode, std::vector<FocalNode>, decltype(f2)>(f2);
     auto closed = Closed<TimedCell>();
-    auto start_focal_heuristic = low_level_focal_heuristic(
+    auto start_focal_heuristic = lowLevelFocalHeuristic(
             agent_id,
             time_conflict_map.count(0) > 0 ? time_conflict_map[0] : vector<std::pair<Cell, int>>(),
             start
@@ -262,11 +262,11 @@ Path<Cell> lowLevelEcbs(Graph<TimedCell> *graph, TimedCell start, TimedCell goal
                 auto time = v.g_value + graph->get_cost(v.coordinates, x);
 
 
-                auto focal_heuristic = low_level_focal_heuristic(agent_id,
-                                                                 time_conflict_map.count(time) > 0
-                                                                 ? time_conflict_map[time]
-                                                                 : vector<std::pair<Cell, int>>(),
-                                                                 x);
+                auto focal_heuristic = lowLevelFocalHeuristic(agent_id,
+                                                              time_conflict_map.count(time) > 0
+                                                              ? time_conflict_map[time]
+                                                              : vector<std::pair<Cell, int>>(),
+                                                              x);
 
 
                 if (verbose)
@@ -327,8 +327,8 @@ vector<Path<Cell>> ECBS::findPaths(const vector<std::pair<Cell, Cell>> &tasks) {
     for (size_t i = 0; i < actors; i++) {
         auto[start, goal] = tasks[i];
         double f1_min = 0.0;
-        root_node.solution[i] = astar_f1min(&low_graph, start, goal,
-                                               f1_min);
+        root_node.solution[i] = astarF1Min(&low_graph, start, goal,
+                                           f1_min);
         root_node.LB += f1_min;
         root_node.agent_f1_min[i] = f1_min;
     }
@@ -381,7 +381,7 @@ vector<Path<Cell>> ECBS::findPaths(const vector<std::pair<Cell, Cell>> &tasks) {
 
     auto f2 = highLevelFocalComparator;
 
-    root_node.update_cost();
+    root_node.updateCost();
     // todo: open and focal, open is set
     std::set<ECBSHighLevelNode, decltype(f1)> open(f1);
     auto focal = std::priority_queue<ECBSHighLevelNode, vector<ECBSHighLevelNode>, decltype(f2)>(f2);
@@ -431,7 +431,7 @@ vector<Path<Cell>> ECBS::findPaths(const vector<std::pair<Cell, Cell>> &tasks) {
         auto v = focal.top();
         focal.pop();
         open.erase(v);
-        Conflict conflict = v.find_conflict();
+        Conflict conflict = v.findConflict();
 
         if (!conflict.has_value()) {
             return v.solution;
@@ -468,7 +468,7 @@ vector<Path<Cell>> ECBS::findPaths(const vector<std::pair<Cell, Cell>> &tasks) {
                 std::cout << "For actor: " << actor << " new path found: " << showPath(new_node.solution[actor]) << '\n';
             }
 
-            new_node.update_cost();
+            new_node.updateCost();
             if (new_node.cost.has_value()) {
                 open.insert(new_node);
             }
@@ -478,7 +478,7 @@ vector<Path<Cell>> ECBS::findPaths(const vector<std::pair<Cell, Cell>> &tasks) {
 }
 
 
-void ECBSHighLevelNode::update_cost() {
+void ECBSHighLevelNode::updateCost() {
     *cost = 0;
     for (auto &p: solution) {
         if (p.empty()) {
@@ -503,7 +503,7 @@ ECBSHighLevelNode::ECBSHighLevelNode(size_t actors) {
     cost = 0;
 }
 
-Conflict ECBSHighLevelNode::find_conflict() const {
+Conflict ECBSHighLevelNode::findConflict() const {
     std::unordered_map<TimedCell, size_t> visits;
     for (size_t i = 0; i < solution.size(); i++) {
         for (TimedCell coors: solution[i]) {

@@ -19,9 +19,9 @@ struct ECBSHighLevelNode {
 
     explicit ECBSHighLevelNode(size_t actors);
 
-    void update_cost();
+    void updateCost();
 
-    Conflict find_conflict() const;
+    Conflict findConflict() const;
 };
 
 
