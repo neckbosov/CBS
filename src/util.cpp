@@ -8,8 +8,10 @@
 #include "cbs.h"
 #include "util.h"
 
-void print_paths_to_file(const std::vector<Path<Cell>>& paths, const std::string& filename) {
+void print_paths_to_file(const std::vector<Path<Cell>>& paths, const std::string& filename,
+                         size_t hl_expanded, size_t ll_expanded) {
     std::ofstream out(filename.c_str());
+    out << "@ " << hl_expanded << " " << ll_expanded << std::endl;
     int agent = 1;
     for (const auto&path: paths) {
         out << agent << std::endl;

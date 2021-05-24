@@ -14,7 +14,7 @@
 
 using std::vector;
 
-vector<Path<Cell>> run_CBS(const Map &map, const vector<Task> &tasks) {
+std::tuple<vector<Path<Cell>>, size_t, size_t> run_CBS(const Map &map, const vector<Task> &tasks) {
     auto cbs = CBS(map.generate_raw_grid());
     auto cell_tasks = vector<std::pair<Cell, Cell>>();
     for (const auto &task : tasks) {
@@ -23,7 +23,7 @@ vector<Path<Cell>> run_CBS(const Map &map, const vector<Task> &tasks) {
     return cbs.find_paths(cell_tasks);
 }
 
-vector<Path<Cell>> run_ECBS(const Map &map, const vector<Task> &tasks, double w) {
+std::tuple<vector<Path<Cell>>, size_t, size_t> run_ECBS(const Map &map, const vector<Task> &tasks, double w) {
     auto ecbs = ECBS(w, map.generate_raw_grid());
     auto cell_tasks = vector<std::pair<Cell, Cell>>();
     for (const auto &task : tasks) {
@@ -59,14 +59,24 @@ int main(int argc, char **argv) {
         tasks.push_back(all_tasks[actor]);
     }
     vector<Path<Cell>> paths;
+    size_t expanded = 0;
+    size_t low_expanded = 0;
     if (alg == "CBS") {
-        paths = run_CBS(map, tasks);
+        auto [cbs_paths,  hl_ex, ll_ex] = run_CBS(map, tasks);
+        paths = cbs_paths;
+        expanded = hl_ex;
+        low_expanded = ll_ex;
     } else if (alg == "ECBS") {
         double w = atof(argv[7]);
-        paths = run_ECBS(map, tasks, w);
+        auto [ecbs_paths, hl_ex, ll_ex] = run_ECBS(map, tasks, w);
+        paths = ecbs_paths;
+        expanded = hl_ex;
+        low_expanded = ll_ex;
     } else if (alg == "AFS") {
         paths = run_AFS(map, tasks);
     }
-    print_paths_to_file(paths, res_path.string());
+    print_paths_to_file(paths, res_path.string(), expanded, low_expanded);
+
+
     return 0;
 }

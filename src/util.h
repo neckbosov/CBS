@@ -8,6 +8,7 @@
 #include "vector"
 #include "string"
 
-void print_paths_to_file(const std::vector<Path<Cell>>& paths, const std::string& filename);
+void print_paths_to_file(const std::vector<Path<Cell>>& paths, const std::string& filename, size_t hl_expanded,
+                         size_t ll_expanded);
 
 #endif //CBS_UTIL_H
