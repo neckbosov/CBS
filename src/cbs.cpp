@@ -124,7 +124,7 @@ void CBSHighLevelNode::update_cost() {
 VertexConflict CBSHighLevelNode::find_vertex_conflict() const {
     std::unordered_map<TimedCell, size_t> visits;
     for (size_t i = 0; i < solution.size(); i++) {
-        for (auto coors: solution[i]) {
+        for (TimedCell coors: solution[i]) {
             auto it = visits.find(coors);
             if (it != visits.end()) {
                 return VertexConflict(std::tuple(i, it->second, it->first));
