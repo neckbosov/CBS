@@ -61,19 +61,16 @@ public:
     vector<Path<Cell>> find_paths(const vector<std::pair<Cell, Cell>> &tasks,
                                   std::set<BCBSHighLevelNode, Cmp1> &open,
                                   std::set<BCBSHighLevelNode, Cmp2> &focal,
-                                  int &id) {
-        while (!focal.empty()) {
+                                  int &id, clock_t tStart, long seconds_limit) {
+        while (!focal.empty() && (clock() - tStart) / CLOCKS_PER_SEC <= seconds_limit) {
             BCBSHighLevelNode min_open = *open.begin();
             if (!min_open.cost.has_value()) {
                 // no solution
                 return vector<Path<Cell>>();
             }
             BCBSHighLevelNode node = *focal.begin();
-            std::cout << 'k' << focal.size() << ' ' << open.size() << std::endl;
             focal.erase(focal.begin());
-            std::cout << 'l' << focal.size() << ' ' << open.size() << std::endl;
             open.erase(node);
-            std::cout << focal.size() << ' ' << open.size() << std::endl;
             Conflict conflict = node.find_conflict();
             if (!conflict.has_value()) {
                 return node.solution;
@@ -96,10 +93,8 @@ public:
                 new_node.update_h();
                 if (new_node.cost.has_value()) {
                     open.insert(new_node);
-                    std::cout << "new node to open" << open.size() << std::endl;
                     if (new_node.cost <= w * cost_min) {
                         focal.insert(new_node);
-                        std::cout << "new node to focal" << std::endl;
                     }
                 }
             }
@@ -108,7 +103,6 @@ public:
                 for (const BCBSHighLevelNode &n: open) {
                     if (n.cost > w * cost_min && n.cost <= w * new_cost_min) {
                         focal.insert(n);
-                        std::cout << "node from open to focal" << std::endl;
                     }
                 }
             }

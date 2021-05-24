@@ -13,15 +13,20 @@ struct ECBSHighLevelNode {
     vector<Path<Cell>> solution;
     vector<double> agent_f1_min;
     vector<std::unordered_set<TimedCell>> vertex_conflicts;
+    vector<std::unordered_set<TimedEdge>> edge_conflicts;
+
     std::optional<int> cost;
     double LB;
     int focal_heuristic;
 
+
     explicit ECBSHighLevelNode(size_t actors);
 
-    void update_cost();
+    void updateCost();
 
-    Conflict find_conflict() const;
+    EdgeConflict findEdgeConflict() const;
+
+    VertexConflict findConflict() const;
 };
 
 
@@ -32,7 +37,7 @@ private:
 public:
     explicit ECBS(double w, vector<std::string> raw_grid);
 
-    vector<Path<Cell>> find_paths(const vector<std::pair<Cell, Cell>> &tasks);
+    vector<Path<Cell>> findPaths(const vector<std::pair<Cell, Cell>> &tasks);
 
 };
 

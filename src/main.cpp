@@ -28,12 +28,12 @@ static void testECBS(std::string mapFilename, std::string scenFilename, int task
     for (int i = taskStart; i < fmin(taskFinish, (int) tasks.size()); i++) {
         firstNTasks.push_back(tasks[i]);
     }
-    auto cbs = ECBS(1.0, map.generate_raw_grid());
+    auto cbs = ECBS(1.5, map.generate_raw_grid());
     std::vector<std::pair<Cell, Cell>> cell_tasks = std::vector<std::pair<Cell, Cell>>();
     for (const auto &task:firstNTasks) {
         cell_tasks.emplace_back(Cell({task.start.x, task.start.y}), Cell({task.finish.x, task.finish.y}));
     }
-    auto paths = cbs.find_paths(cell_tasks);
+    auto paths = cbs.findPaths(cell_tasks);
     int id = 0;
     for (const auto &s: paths) {
         id += 1;
