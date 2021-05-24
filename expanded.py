@@ -34,12 +34,12 @@ def run(alg_name, map_name, scen_name, num_agents, num_repetitions, w=None):
 random_map, random_scen = 'random-32-32-20.map', 'random-32-32-20-even-10.scen'
 expanded_list = []
 N = 10
-algo = 'ECBS'
-w = 1.5
+algo = 'CBS'
+w = None
 
-for num_actors in [3, 4, 5, 6, 7, 8, 10, 13, 14, 16, 18, 20, 22]:
+for num_actors in [3, 4, 5, 6, 7, 8, 10, 13, 14, 16, 18, 20, 22, 25, 27, 30, 33, 36, 40]:
     expanded = run(algo, random_map, random_scen, num_actors, N, w)
     expanded_list.append(expanded)
-    print(f'{algo} expanded nodes for {num_actors}: {expanded}')
+    print(f'{algo} w={w} expanded nodes for {num_actors}: {expanded}')
 
 print(expanded_list)
