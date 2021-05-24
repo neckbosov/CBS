@@ -5,6 +5,7 @@
 #include "ecbs.h"
 #include "task.h"
 #include "util.h"
+#include "astar_ndim.h"
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -41,6 +42,14 @@ vector<Path<Cell>> run_AFS(const Map &map, const vector<Task> &tasks) {
     return afs.find_paths(cell_tasks, 600);
 }
 
+vector<Path<Cell>> run_ASTAR(const Map &map, const vector<Task> &tasks) {
+
+    auto cell_tasks = vector<std::pair<Cell, Cell>>();
+    for (const auto &task : tasks) {
+        cell_tasks.emplace_back(Cell({task.start.x, task.start.y}), Cell({task.finish.x, task.finish.y}));
+    }
+}
+
 int main(int argc, char **argv) {
     std::filesystem::path res_path(argv[1]);
     std::string alg(argv[2]);
@@ -66,6 +75,8 @@ int main(int argc, char **argv) {
         paths = run_ECBS(map, tasks, w);
     } else if (alg == "AFS") {
         paths = run_AFS(map, tasks);
+    } else if (alg == "ASTAR") {
+
     }
     print_paths_to_file(paths, res_path.string());
     return 0;
