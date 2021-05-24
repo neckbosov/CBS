@@ -14,16 +14,18 @@ import tqdm
 def run(alg_name, map_name, scen_name, num_agents, num_repetitions, w=None):
     hl_expanded = 0
     ll_expanded = 0
+    count_done = 0
     for i in tqdm.tqdm(range(num_repetitions)):
-        run_algo(alg=alg_name, dest_file=filename,
+        done = run_algo(alg=alg_name, dest_file=filename,
                         map_path=os.path.join(os.curdir, 'data', 'maps', 'mapf', map_name),
                         scen_path=os.path.join(os.curdir, 'data', 'scens', 'mapf', scen_name),
                         tasks_count=num_agents,
                         test_num=i, w=w)
+        count_done += int(done)
         hl, ll = read_expanded(filename)
-        hl_expanded += hl
-        ll_expanded += ll
-    return hl_expanded / num_repetitions, ll_expanded / num_repetitions
+        hl_expanded += hl * int(done)
+        ll_expanded += ll * int(done)
+    return hl_expanded / count_done, ll_expanded / count_done
 
 
 
