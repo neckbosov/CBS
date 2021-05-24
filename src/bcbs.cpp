@@ -30,6 +30,7 @@ BCBSHighLevelNode::BCBSHighLevelNode(size_t actors, int idd) {
     num_of_actors = (int) actors;
     solution = vector<Path<Cell>>(actors);
     vertex_conflicts = vector<std::unordered_set<TimedCell>>(actors);
+    edge_conflicts = vector<std::unordered_set<TimedEdge>>(actors);
     cost = std::nullopt;
     h = 0;
     id = idd;
@@ -39,6 +40,7 @@ BCBSHighLevelNode::BCBSHighLevelNode(const BCBSHighLevelNode &other) {
     num_of_actors = other.num_of_actors;
     solution = other.solution;
     vertex_conflicts = other.vertex_conflicts;
+    edge_conflicts = other.edge_conflicts;
     cost = other.cost;
     h = other.h;
     id = other.id;

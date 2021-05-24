@@ -99,6 +99,7 @@ public:
                         }
                     }
                 }
+                continue;
             }
             auto[actor1, actor2, timedCell] = conflict.value();
             for (auto actor: {actor1, actor2}) {

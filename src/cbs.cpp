@@ -197,6 +197,7 @@ vector<Path<Cell>> CBS::find_paths(const vector<std::pair<Cell, Cell>> &tasks) {
                     q.push(new_node);
                 }
             }
+            continue;
         }
 //        std::cout << node.cost.value();
         auto[actor1, actor2, timedCell] = conflict.value();
