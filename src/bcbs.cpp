@@ -76,13 +76,13 @@ void BCBSHighLevelNode::update_h() {
     }
 }
 
-Conflict BCBSHighLevelNode::find_conflict() const {
+VertexConflict BCBSHighLevelNode::find_vertex_conflict() const {
     std::unordered_map<TimedCell, size_t> visits;
     for (size_t i = 0; i < solution.size(); i++) {
         for (TimedCell coors: solution[i]) {
             auto it = visits.find(coors);
             if (it != visits.end()) {
-                return Conflict(std::tuple(i, it->second, it->first));
+                return VertexConflict(std::tuple(i, it->second, it->first));
             } else {
                 visits[coors] = i;
             }
@@ -90,3 +90,22 @@ Conflict BCBSHighLevelNode::find_conflict() const {
     }
     return std::nullopt;
 }
+
+EdgeConflict BCBSHighLevelNode::find_edge_conflict() const {
+    std::unordered_map<TimedEdge, size_t> passes;
+    for (size_t i = 0; i < solution.size(); i++) {
+        for (size_t j = 1; j < solution[i].size(); j++) {
+            auto prev = solution[i][j - 1];
+            auto cur = solution[i][j];
+            auto edge = TimedEdge{prev, cur};
+            auto it = passes.find(edge);
+            if (it != passes.end()) {
+                return EdgeConflict({{i, edge}, {it->second, it->first}});
+            } else {
+                passes[edge] = i;
+            }
+        }
+    }
+    return EdgeConflict();
+}
+

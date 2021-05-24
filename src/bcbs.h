@@ -8,13 +8,12 @@
 #include "cbs.h"
 #include <set>
 
-using Conflict = std::optional<std::tuple<size_t, size_t, TimedCell>>;
-
 struct BCBSHighLevelNode {
     int id;
     int num_of_actors;
     vector<Path<Cell>> solution;
     vector<std::unordered_set<TimedCell>> vertex_conflicts;
+    vector<std::unordered_set<TimedEdge>> edge_conflicts;
     std::optional<int> cost;
     double h;
 
@@ -44,8 +43,9 @@ struct BCBSHighLevelNode {
 
     void update_h();
 
-    Conflict find_conflict() const;
+    VertexConflict find_vertex_conflict() const;
 
+    EdgeConflict find_edge_conflict() const;
 };
 
 class BCBS {
@@ -71,18 +71,42 @@ public:
             BCBSHighLevelNode node = *focal.begin();
             focal.erase(focal.begin());
             open.erase(node);
-            Conflict conflict = node.find_conflict();
-            if (!conflict.has_value()) {
-                return node.solution;
-            }
+            VertexConflict conflict = node.find_vertex_conflict();
             double cost_min = min_open.cost.value();
+            if (!conflict.has_value()) {
+                auto edge_conflict = node.find_edge_conflict();
+                if (edge_conflict.empty()) {
+                    return node.solution;
+                }
+                for (auto[actor, edge]: edge_conflict) {
+                    auto new_node = node;
+                    new_node.id = id;
+                    id++;
+                    new_node.edge_conflicts[actor].insert(edge);
+                    auto left_low_graph = CBSLowLevelGraph(grid, new_node.vertex_conflicts[actor], new_node.edge_conflicts[actor]);
+                    auto new_path = astar(&left_low_graph, TimedCell{tasks[actor].first, 0},
+                                          TimedCell{tasks[actor].second, 0});
+                    new_node.solution[actor] = Path<Cell>();
+                    for (auto[cell, new_time]: new_path) {
+                        new_node.solution[actor].push_back(TimedCell{cell.coordinates, new_time});
+                    }
+                    new_node.update_cost();
+                    new_node.update_h();
+                    if (new_node.cost.has_value()) {
+                        open.insert(new_node);
+                        if (new_node.cost <= w * cost_min) {
+                            focal.insert(new_node);
+                        }
+                    }
+                }
+            }
             auto[actor1, actor2, timedCell] = conflict.value();
             for (auto actor: {actor1, actor2}) {
                 auto new_node = node;
                 new_node.id = id;
-                id += 1;
+                id++;
                 new_node.vertex_conflicts[actor].insert(timedCell);
-                auto left_low_graph = CBSLowLevelGraph(grid, new_node.vertex_conflicts[actor]);
+                auto left_low_graph = CBSLowLevelGraph(grid, new_node.vertex_conflicts[actor], new_node.edge_conflicts[actor]);
                 auto new_path = astar(&left_low_graph, TimedCell{tasks[actor].first, 0},
                                       TimedCell{tasks[actor].second, 0});
                 new_node.solution[actor] = Path<Cell>();
