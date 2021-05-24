@@ -6,7 +6,8 @@
 #define CBS_BCBS_H
 
 #include "cbs.h"
-#include "set"
+#include <set>
+
 using Conflict = std::optional<std::tuple<size_t, size_t, TimedCell>>;
 
 struct BCBSHighLevelNode {
@@ -53,12 +54,13 @@ private:
     double w;
 public:
     explicit BCBS(vector<std::string> raw_grid, double w);
+
     BCBS(vector<vector<int>> grid, double weight);
 
     template<typename Cmp1, typename Cmp2>
     vector<Path<Cell>> find_paths(const vector<std::pair<Cell, Cell>> &tasks,
                                   std::set<BCBSHighLevelNode, Cmp1> &open,
-                                   std::set<BCBSHighLevelNode, Cmp2> &focal,
+                                  std::set<BCBSHighLevelNode, Cmp2> &focal,
                                   int &id) {
         while (!focal.empty()) {
             BCBSHighLevelNode min_open = *open.begin();
@@ -83,7 +85,7 @@ public:
                 new_node.id = id;
                 id += 1;
                 new_node.vertex_conflicts[actor].insert(timedCell);
-                auto left_low_graph = CBSLowLevelGraph(grid, node.vertex_conflicts[actor]);
+                auto left_low_graph = CBSLowLevelGraph(grid, new_node.vertex_conflicts[actor]);
                 auto new_path = astar(&left_low_graph, TimedCell{tasks[actor].first, 0},
                                       TimedCell{tasks[actor].second, 0});
                 new_node.solution[actor] = Path<Cell>();

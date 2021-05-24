@@ -106,7 +106,7 @@ TEST(CBSTest, CBSMazeLarge1) {
 TEST(CBSTest, CBSMazeLarge2) {
     CBSTest::testCBS("../data/maps/mapf/maze-32-32-2.map",
                      "../data/scens/mapf/maze-32-32-2-even-1.scen",
-                     100, 140);
+                     100, 130);
 }
 
 TEST(CBSTest, CBSMazeLarge3) {
