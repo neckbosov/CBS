@@ -36,11 +36,11 @@ vector<Path<Cell>> AFS_CBS::find_paths(const vector<std::pair<Cell, Cell>> &task
     root_node.update_h();
 
     auto g = [](const BCBSHighLevelNode &a, const BCBSHighLevelNode &b) {
-        return a.cost < b.cost;
+        return a.cost < b.cost || (a.cost == b.cost && a.id < b.id);
     };
 
     auto h_c = [](const BCBSHighLevelNode &a, const BCBSHighLevelNode &b) {
-        return a.h > b.h;
+        return a.h > b.h || (a.h == b.h && a.id < b.id);
     };
     std::set<BCBSHighLevelNode, decltype(g)> open(g);
     std::set<BCBSHighLevelNode, decltype(h_c)> focal(h_c);
