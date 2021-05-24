@@ -1,8 +1,8 @@
 #include <vector>
 #include <set>
-#include <functional>
 #include "afs_cbs.h"
 #include "bcbs.h"
+#include <ctime>
 
 using std::vector;
 
@@ -22,7 +22,8 @@ AFS_CBS::AFS_CBS(double w, vector<std::string> raw_grid) {
     }
 }
 
-vector<Path<Cell>> AFS_CBS::find_paths(const vector<std::pair<Cell, Cell>> &tasks) {
+vector<Path<Cell>> AFS_CBS::find_paths(const vector<std::pair<Cell, Cell>> &tasks, long seconds_limit) {
+    clock_t tStart = clock();
     size_t actors = tasks.size();
     auto low_graph = AStarGridGraph(grid);
     int id = 0;
@@ -36,11 +37,11 @@ vector<Path<Cell>> AFS_CBS::find_paths(const vector<std::pair<Cell, Cell>> &task
     root_node.update_h();
 
     auto g = [](const BCBSHighLevelNode &a, const BCBSHighLevelNode &b) {
-        return a.cost < b.cost;
+        return a.cost < b.cost || (a.cost == b.cost && a.id < b.id);
     };
 
     auto h_c = [](const BCBSHighLevelNode &a, const BCBSHighLevelNode &b) {
-        return a.h > b.h;
+        return a.h < b.h || (a.h == b.h && a.id < b.id);
     };
     std::set<BCBSHighLevelNode, decltype(g)> open(g);
     std::set<BCBSHighLevelNode, decltype(h_c)> focal(h_c);
@@ -51,7 +52,7 @@ vector<Path<Cell>> AFS_CBS::find_paths(const vector<std::pair<Cell, Cell>> &task
     std::vector<Path<Cell>> paths = std::vector<Path<Cell>>();
     double prev_cost = 0;
     double curr_w = w1;
-    while ((!paths.empty() || iter < 100) && !open.empty()) {
+    while ((!paths.empty() || (clock() - tStart) / CLOCKS_PER_SEC < seconds_limit) && !open.empty()) {
         if (iter != 0) {
             BCBSHighLevelNode min_open = *open.begin();
             curr_w = prev_cost / min_open.cost.value() - 1e-4;
@@ -68,9 +69,7 @@ vector<Path<Cell>> AFS_CBS::find_paths(const vector<std::pair<Cell, Cell>> &task
             }
         }
 
-        std::cout << paths.size() << ' ' << curr_w << ' ' << open.size() << ' ' << focal.size() << std::endl;
-        auto paths_new = BCBS(grid, curr_w).find_paths(tasks, open, focal, id);
-        std::cout << paths_new.size() << ' ' << curr_w << ' ' << open.size() << ' ' << focal.size() << std::endl;
+        auto paths_new = BCBS(grid, curr_w).find_paths(tasks, open, focal, id, tStart, seconds_limit);
 
         if (paths_new.empty()) {
             return paths;

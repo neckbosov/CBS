@@ -16,7 +16,7 @@ private:
 public:
     explicit AFS_CBS(double w, std::vector<std::string> raw_grid);
 
-    vector<Path<Cell>> find_paths(const vector<std::pair<Cell, Cell>> &tasks);
+    vector<Path<Cell>> find_paths(const vector<std::pair<Cell, Cell>> &tasks, long seconds_limit);
 };
 
 
