@@ -23,7 +23,7 @@ TEST(AStarTest, AStarSimple) {
     Map map = Map("../data/maps/one-way-simple.map");
     std::vector<Task> tasks = Task::fromMovingAI("../data/scens/astar/one-way-simple.scen");
     for (const auto &task:tasks) {
-        auto path = astar(&map, task.start, task.finish);
+        auto [path, hl] = astar(&map, task.start, task.finish);
         auto result = count_path_len(&map, path);
         ASSERT_TRUE(std::abs(result - task.bestDistance) < EPS);
         ASSERT_TRUE(path[0].coordinates == task.start);

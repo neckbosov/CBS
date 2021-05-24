@@ -29,7 +29,7 @@ public:
             cell_tasks.emplace_back(Cell({task.start.x, task.start.y}), Cell({task.finish.x, task.finish.y}));
         }
         auto paths = afs.find_paths(cell_tasks, 2 * 60);
-        print_paths_to_file(paths, task_filename);
+        print_paths_to_file(paths, task_filename, 0, 0);
         ASSERT_EQ(paths.size(), cell_tasks.size());
         for (int i = 0; i < (int)paths.size(); i++) {
             ASSERT_TRUE(paths[i][0].coordinates == cell_tasks[i].first);
