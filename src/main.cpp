@@ -4,53 +4,15 @@
 #include "afs_cbs.h"
 #include "ecbs.h"
 #include "task.h"
+#include "util.h"
 #include <iostream>
-#include <unordered_map>
 #include <vector>
 #include <algorithm>
 #include <cstdlib>
-#include <cassert>
 #include <random>
 #include <filesystem>
 
 using std::vector;
-
-static void testECBS(std::string mapFilename, std::string scenFilename, int taskStart, int taskFinish) {
-    if (mapFilename[0] == '.') {
-        std::string my_dir = "C:/Users/pavlo/CLionProjects/CBS";
-        mapFilename = my_dir + mapFilename.substr(2, mapFilename.size());
-        scenFilename = my_dir + scenFilename.substr(2, scenFilename.size());
-    }
-
-    Map map = Map(mapFilename);
-    std::vector<Task> tasks = Task::fromMovingAI(scenFilename);
-    std::vector<Task> firstNTasks = std::vector<Task>();
-    for (int i = taskStart; i < fmin(taskFinish, (int) tasks.size()); i++) {
-        firstNTasks.push_back(tasks[i]);
-    }
-    auto cbs = ECBS(1.5, map.generate_raw_grid());
-    std::vector<std::pair<Cell, Cell>> cell_tasks = std::vector<std::pair<Cell, Cell>>();
-    for (const auto &task:firstNTasks) {
-        cell_tasks.emplace_back(Cell({task.start.x, task.start.y}), Cell({task.finish.x, task.finish.y}));
-    }
-    auto paths = cbs.findPaths(cell_tasks);
-    int id = 0;
-    for (const auto &s: paths) {
-        id += 1;
-        std::cout << "id " << id << '\n';
-        for (auto c: s) {
-            std::cout << "{" << c.coordinates.x << ", " << c.coordinates.y << '}' << "@" << c.time << ' ';
-        }
-        std::cout << '\n';
-    }
-    std::cout << paths.size() << " == " << cell_tasks.size() << '\n';
-    assert(paths.size() == cell_tasks.size());
-    for (int i = 0; i < (int) paths.size(); i++) {
-        assert(paths[i][0].coordinates == cell_tasks[i].first);
-        assert(paths[i].back().coordinates == cell_tasks[i].second);
-        assert(is_path_correct(&map, paths[i]));
-    }
-}
 
 vector<Path<Cell>> run_CBS(const Map &map, const vector<Task> &tasks) {
     auto cbs = CBS(map.generate_raw_grid());
@@ -76,7 +38,7 @@ vector<Path<Cell>> run_AFS(const Map &map, const vector<Task> &tasks) {
     for (const auto &task : tasks) {
         cell_tasks.emplace_back(Cell({task.start.x, task.start.y}), Cell({task.finish.x, task.finish.y}));
     }
-    return afs.find_paths(cell_tasks);
+    return afs.find_paths(cell_tasks, 600);
 }
 
 int main(int argc, char **argv) {
@@ -92,6 +54,7 @@ int main(int argc, char **argv) {
     vector<size_t> seq(all_tasks.size());
     std::iota(seq.begin(), seq.end(), 0);
     std::sample(seq.begin(), seq.end(), std::back_inserter(actors), tasks_count, gen);
+    tasks.reserve(actors.size());
     for (auto actor : actors) {
         tasks.push_back(all_tasks[actor]);
     }
@@ -104,12 +67,6 @@ int main(int argc, char **argv) {
     } else if (alg == "AFS") {
         paths = run_AFS(map, tasks);
     }
-    std::ofstream out(res_path);
-    out << "Actor,x,y,Time\n";
-    for (int i = 0; i < tasks_count; i++) {
-        for (auto cell: paths[i]) {
-            out << actors[i] << ',' << cell.coordinates.x << ',' << cell.coordinates.y << ',' << cell.time << '\n';
-        }
-    }
+    print_paths_to_file(paths, res_path.string());
     return 0;
 }

@@ -52,7 +52,7 @@ vector<Path<Cell>> AFS_CBS::find_paths(const vector<std::pair<Cell, Cell>> &task
     std::vector<Path<Cell>> paths = std::vector<Path<Cell>>();
     double prev_cost = 0;
     double curr_w = w1;
-    while ((!paths.empty() || (clock() - tStart) / CLOCKS_PER_SEC < seconds_limit) && !open.empty()) {
+    while ((!paths.empty() || 1.0L * (clock() - tStart) / CLOCKS_PER_SEC < 1.0L * seconds_limit) && !open.empty()) {
         if (iter != 0) {
             BCBSHighLevelNode min_open = *open.begin();
             curr_w = prev_cost / min_open.cost.value() - 1e-4;
@@ -68,9 +68,9 @@ vector<Path<Cell>> AFS_CBS::find_paths(const vector<std::pair<Cell, Cell>> &task
                 }
             }
         }
-
+//        std::cout << iter << std::endl;
         auto paths_new = BCBS(grid, curr_w).find_paths(tasks, open, focal, id, tStart, seconds_limit);
-
+//        std::cout << "bcbs ended" << std::endl;
         if (paths_new.empty()) {
             return paths;
         } else {

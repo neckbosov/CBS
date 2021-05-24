@@ -289,7 +289,7 @@ bool highLevelFocalComparator(const ECBSHighLevelNode& a, const ECBSHighLevelNod
 }
 
 #define VERBOSE
-vector<Path<Cell>> ECBS::findPaths(const vector<std::pair<Cell, Cell>> &tasks) {
+vector<Path<Cell>> ECBS::find_paths(const vector<std::pair<Cell, Cell>> &tasks) {
     // initialization
 
 #ifdef VERBOSE
