@@ -151,6 +151,7 @@ vector<Path<Cell>> CBS::find_paths(const vector<std::pair<Cell, Cell>> &tasks) {
         if (!conflict.has_value()) {
             return node.solution;
         }
+//        std::cout << node.cost.value();
         auto[actor1, actor2, timedCell] = conflict.value();
 //        std::cout << "path 1:" << std::endl;
 //        for (auto v : node.solution[actor1]) {
