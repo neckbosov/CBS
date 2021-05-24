@@ -42,8 +42,11 @@ random_map, random_scen = 'random-32-32-10.map', 'random-32-32-10-even-1.scen'
 rate_list = []
 N = 10
 for num_actors in [5, 10, 20, 30, 40, 50]:
-    rate = success_rate('CBS', random_map, random_scen, num_actors, N)
+    rate = success_rate('AFS', random_map, random_scen, num_actors, N)
     print(f'Num actors :{num_actors}, Rate: {rate:.2f}%')
+    if rate <= 0.1:
+        print("too low rate, stopping here")
+        break
     rate_list.append(rate)
 
 print(rate_list)
