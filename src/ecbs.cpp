@@ -288,7 +288,6 @@ bool highLevelFocalComparator(const ECBSHighLevelNode& a, const ECBSHighLevelNod
     return std::make_tuple(a.focal_heuristic, a.cost.value(), a.LB) > std::make_tuple(b.focal_heuristic, b.cost.value(), b.LB);
 }
 
-#define VERBOSE
 vector<Path<Cell>> ECBS::find_paths(const vector<std::pair<Cell, Cell>> &tasks) {
     // initialization
 
