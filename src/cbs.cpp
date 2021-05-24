@@ -198,6 +198,7 @@ vector<Path<Cell>> CBS::find_paths(const vector<std::pair<Cell, Cell>> &tasks) {
                 }
             }
         }
+//        std::cout << node.cost.value();
         auto[actor1, actor2, timedCell] = conflict.value();
 //        std::cout << "path 1:" << std::endl;
 //        for (auto v : node.solution[actor1]) {
@@ -212,7 +213,7 @@ vector<Path<Cell>> CBS::find_paths(const vector<std::pair<Cell, Cell>> &tasks) {
         for (auto actor: {actor1, actor2}) {
             auto new_node = node;
             new_node.vertex_conflicts[actor].insert(timedCell);
-            auto left_low_graph = CBSLowLevelGraph(grid, node.vertex_conflicts[actor], node.edge_conflicts[actor]);
+            auto left_low_graph = CBSLowLevelGraph(grid, new_node.vertex_conflicts[actor], new_node.edge_conflicts[actor]);
             auto new_path = astar(&left_low_graph, TimedCell{tasks[actor].first, 0},
                                   TimedCell{tasks[actor].second, 0});
 //            std::cout << "new path for actor " << actor << std::endl;

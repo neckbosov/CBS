@@ -4,7 +4,7 @@ file(GLOB_RECURSE TEST_SOURCES LIST_DIRECTORIES false *.h *.cpp)
 
 set(SOURCES ${TEST_SOURCES})
 
-add_executable(${BINARY} ${TEST_SOURCES} test_astar.cpp main.cpp test_cbs.cpp test_ecbs.cpp)
+add_executable(${BINARY} ${TEST_SOURCES} test_astar.cpp main.cpp test_cbs.cpp test_ecbs.cpp test_afs.cpp)
 
 add_test(NAME ${BINARY} COMMAND ${BINARY})
 

@@ -123,13 +123,7 @@ struct CBSHighLevelNode {
     std::optional<int> cost;
 
     bool operator>(const CBSHighLevelNode &other) const {
-        if (!cost.has_value()) {
-            return false;
-        } else if (!other.cost.has_value()) {
-            return true;
-        } else {
-            return cost.value() < other.cost.value();
-        }
+        return cost.value() > other.cost.value();
     }
 
     explicit CBSHighLevelNode(size_t actors);

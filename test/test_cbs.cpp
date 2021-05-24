@@ -14,31 +14,33 @@ const double EPS = 1e-6;
 
 class CBSTest : public ::testing::Test {
 public:
-    static void testCBS(const std::string& mapFilename, const std::string& scenFilename, int taskStart, int taskFinish) {
+    static void
+    testCBS(const std::string &mapFilename, const std::string &scenFilename, int taskStart, int taskFinish) {
         Map map = Map(mapFilename);
         std::vector<Task> tasks = Task::fromMovingAI(scenFilename);
         std::vector<Task> firstNTasks = std::vector<Task>();
-        for (int i = taskStart; i < fmin(taskFinish, (int)tasks.size()); i++) {
+        for (int i = taskStart; i < fmin(taskFinish, (int) tasks.size()); i++) {
             firstNTasks.push_back(tasks[i]);
         }
         auto cbs = CBS(map.generate_raw_grid());
         std::vector<std::pair<Cell, Cell>> cell_tasks = std::vector<std::pair<Cell, Cell>>();
-        for (const auto&task:firstNTasks) {
+        for (const auto &task:firstNTasks) {
             cell_tasks.emplace_back(Cell({task.start.x, task.start.y}), Cell({task.finish.x, task.finish.y}));
         }
         auto paths = cbs.find_paths(cell_tasks);
         ASSERT_EQ(paths.size(), cell_tasks.size());
-        for (int i = 0; i < (int)paths.size(); i++) {
+        for (int i = 0; i < (int) paths.size(); i++) {
             ASSERT_TRUE(paths[i][0].coordinates == cell_tasks[i].first);
             ASSERT_TRUE(paths[i].back().coordinates == cell_tasks[i].second);
             ASSERT_TRUE(is_path_correct(&map, paths[i]));
         }
     }
+
 protected:
-    CBSTest() {} //constructor runs before each test
-    virtual ~CBSTest() {} //destructor cleans up after tests
-    virtual void SetUp() {} //sets up before each test (after constructor)
-    virtual void TearDown() {} //clean up after each test, (before destructor)
+    CBSTest() = default; //constructor runs before each test
+    ~CBSTest() override = default; //destructor cleans up after tests
+    void SetUp() override {} //sets up before each test (after constructor)
+    void TearDown() override {} //clean up after each test, (before destructor)
 };
 
 TEST(CBSTest, CBSSimple) {
@@ -104,7 +106,7 @@ TEST(CBSTest, CBSMazeLarge1) {
 TEST(CBSTest, CBSMazeLarge2) {
     CBSTest::testCBS("../data/maps/mapf/maze-32-32-2.map",
                      "../data/scens/mapf/maze-32-32-2-even-1.scen",
-                     100, 140);
+                     100, 130);
 }
 
 TEST(CBSTest, CBSMazeLarge3) {
