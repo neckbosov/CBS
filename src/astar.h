@@ -134,7 +134,7 @@ double count_path_len(Graph<Coordinates> *graph, Path<Coordinates> path) {
     }
     Coordinates prev = path[0].coordinates;
     double len = 0.0;
-    for (auto i = 1; i < path.size(); i++) {
+    for (size_t i = 1; i < path.size(); i++) {
         len += graph->get_cost(prev, path[i].coordinates);
         prev = path[i].coordinates;
     }
