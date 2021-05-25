@@ -1,14 +1,13 @@
 # CBS
 
-`Compare` должен возвращать **более далекую** вершину, так как в `priority_queue` обратный порядок.
+Зависимости: `g++`, `googletest`, `python`, `python-tqdm`, `jupyter`
 
-`Coordinates` должен быть хэшируемым (нужно реальзовать `template<> struct hash<Kek>` для вашего типа координат `Kek`).
+Сборка:
 
-Запуск тестов из консоли:
-
-```
-cd cmake-build-debug
-./test/CBS_tst
+```bash
+mkdir build && cd build && cmake .. && make -j6 && cd ..
 ```
 
-Для запуска в Clion надо выставить `cmake-build-debug` в working directory.
+Запуск тестов: `./build/test/CBS_tst`
+
+Бенчмарки находятся в `Benchmarks.ipynb`
