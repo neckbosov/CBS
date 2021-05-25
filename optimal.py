@@ -66,7 +66,7 @@ def optimal_rate(alg_name, map_name, scen_name, num_agents, num_repetitions, w=N
                 rates.append((sub_optimal_len, optimal_len))
 
         if rates:
-            rate += sum(x for x, _ in rates) / (sum(y for _, y in rates) + 1)
+            rate += sum(x for x, _ in rates) / (sum(y for _, y in rates))
         count_done += 1
 
     return rate / count_done
