@@ -18,6 +18,10 @@ class Open {
 private:
     std::priority_queue<Node<Coordinates>, std::vector<Node<Coordinates>>, Compare> elements;
 public:
+    size_t size() {
+        return elements.size();
+    }
+
     bool empty() {
         return elements.empty();
     }
@@ -47,6 +51,10 @@ class Closed {
 private:
     std::unordered_set<Coordinates> elements;
 public:
+    size_t size() {
+        return elements.size();
+    }
+
     void add_node(Coordinates coors) {
         elements.insert(coors);
     }
@@ -85,9 +93,10 @@ template<typename Coordinates>
 using Path = std::vector<TimedCoordinates<Coordinates>>;
 
 template<typename Coordinates, typename Compare = std::greater<Node<Coordinates>>>
-Path<Coordinates>
+std::pair<Path<Coordinates>, size_t>
 astar(Graph<Coordinates> *graph, Coordinates start, Coordinates goal,
       Compare comp = std::greater<Node<Coordinates>>()) {
+    size_t expanded_nodes = 0;
     auto open = Open<Coordinates>(comp);
     std::unordered_map<Coordinates, Coordinates> real_parent;
     std::unordered_map<Coordinates, double> dist;
@@ -113,7 +122,8 @@ astar(Graph<Coordinates> *graph, Coordinates start, Coordinates goal,
             }
             path.push_back(TimedCoordinates<Coordinates>{cur_coors, dist[cur_coors]});
             std::reverse(path.begin(), path.end());
-            return path;
+            expanded_nodes = open.size() + closed.size();
+            return std::make_pair(path, expanded_nodes);
         }
         for (auto x : graph->get_neighbours(v.coordinates)) {
             if (!closed.was_expanded(x)) {
@@ -124,7 +134,7 @@ astar(Graph<Coordinates> *graph, Coordinates start, Coordinates goal,
             }
         }
     }
-    return Path<Coordinates>();
+    return std::make_pair(Path<Coordinates>(), 0);
 }
 
 template<typename Coordinates, typename Compare = std::greater<Node<Coordinates>>>

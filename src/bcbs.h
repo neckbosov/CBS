@@ -7,7 +7,7 @@
 
 #include "cbs.h"
 #include <set>
-
+#include <ctime>
 struct BCBSHighLevelNode {
     int id;
     int num_of_actors;
@@ -88,7 +88,7 @@ public:
                     new_node.edge_conflicts[actor].insert(edge);
                     auto left_low_graph = CBSLowLevelGraph(grid, new_node.vertex_conflicts[actor],
                                                            new_node.edge_conflicts[actor]);
-                    auto new_path = astar(&left_low_graph, TimedCell{tasks[actor].first, 0},
+                    auto [new_path, expanded] = astar(&left_low_graph, TimedCell{tasks[actor].first, 0},
                                           TimedCell{tasks[actor].second, 0});
                     new_node.solution[actor] = Path<Cell>();
                     for (auto[cell, new_time]: new_path) {
@@ -115,7 +115,7 @@ public:
                 new_node.vertex_conflicts[actor].insert(timedCell);
                 auto left_low_graph = CBSLowLevelGraph(grid, new_node.vertex_conflicts[actor],
                                                        new_node.edge_conflicts[actor]);
-                auto new_path = astar(&left_low_graph, TimedCell{tasks[actor].first, 0},
+                auto [new_path, expanded] = astar(&left_low_graph, TimedCell{tasks[actor].first, 0},
                                       TimedCell{tasks[actor].second, 0});
 //                std::cout << "astar ok " << std::endl;
                 new_node.solution[actor] = Path<Cell>();

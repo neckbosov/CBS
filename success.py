@@ -6,7 +6,7 @@ from collections import defaultdict
 def parse_path_file(path_file_content):
     agents_path = defaultdict(list)
     agent = None
-    lines = path_file_content.split('\n')
+    lines = path_file_content.split('\n')[1:]
     for line in lines:
         if line == '':
             break
@@ -38,12 +38,15 @@ def success_rate(alg_name, map_name, scen_name, num_agents, num_repetitions, w=N
     return rate / num_repetitions
 
 # build success_rate stats
-random_map, random_scen = 'random-32-32-10.map', 'random-32-32-10-even-1.scen'
+random_map, random_scen = 'brc202d.map', 'brc202d-even-1.scen'
 rate_list = []
 N = 10
-for num_actors in [5, 10, 20, 30, 40, 50]:
-    rate = success_rate('CBS', random_map, random_scen, num_actors, N)
+for num_actors in [1, 3, 5, 7, 10]:
+    rate = success_rate('ECBS', random_map, random_scen, num_actors, N, w=1.5)
     print(f'Num actors :{num_actors}, Rate: {rate:.2f}%')
+    if rate <= 0.1:
+        print("too low rate, stopping here")
+        break
     rate_list.append(rate)
 
 print(rate_list)

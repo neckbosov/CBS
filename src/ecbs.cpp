@@ -73,9 +73,10 @@ size_t lowLevelFocalHeuristic(size_t agent_id,
 
 
 template<typename Coordinates, typename Compare = std::greater<Node<Coordinates>>>
-Path<Coordinates>
+std::pair<Path<Coordinates>, size_t>
 astarF1Min(Graph<Coordinates> *graph, Coordinates start, Coordinates goal,
            double& f1_min, Compare comp = std::greater<Node<Coordinates>>()) {
+    size_t expanded_nodes = 0;
     auto open = Open<Coordinates>(comp);
     std::unordered_map<Coordinates, Coordinates> real_parent;
     std::unordered_map<Coordinates, int> dist;
@@ -102,7 +103,7 @@ astarF1Min(Graph<Coordinates> *graph, Coordinates start, Coordinates goal,
             }
             path.push_back(TimedCoordinates<Coordinates>{cur_coors, dist[cur_coors]});
             std::reverse(path.begin(), path.end());
-            return path;
+            return {path, open.size() + closed.size()};
         }
         for (auto x : graph->get_neighbours(v.coordinates)) {
             if (!closed.was_expanded(x)) {
@@ -113,7 +114,7 @@ astarF1Min(Graph<Coordinates> *graph, Coordinates start, Coordinates goal,
             }
         }
     }
-    return Path<Coordinates>();
+    return {Path<Coordinates>(), 0};
 }
 
 bool lowLevelFocalComparator(const FocalNode& a, const FocalNode& b) {
@@ -128,7 +129,7 @@ std::ostream& operator << ( std::ostream& outs, const FocalNode & p )
 }
 
 
-Path<Cell> lowLevelEcbs(Graph<TimedCell> *graph, TimedCell start, TimedCell goal, double w, size_t agent_id, const vector<Path<Cell>>& solution,
+std::pair<Path<Cell>, size_t> lowLevelEcbs(Graph<TimedCell> *graph, TimedCell start, TimedCell goal, double w, size_t agent_id, const vector<Path<Cell>>& solution,
                         double& f1_min) {
 
 #ifdef VERBOSE
@@ -186,6 +187,8 @@ Path<Cell> lowLevelEcbs(Graph<TimedCell> *graph, TimedCell start, TimedCell goal
     std::unordered_map<TimedCell, int> dist;
     real_parent[start] = start;
     dist[start] = 0.0;
+
+    size_t expanded_nodes = 0;
 
     open.insert(start_node);
     focal.push(start_node);
@@ -254,7 +257,7 @@ Path<Cell> lowLevelEcbs(Graph<TimedCell> *graph, TimedCell start, TimedCell goal
             }
             path.push_back(TimedCoordinates<Cell>{cur_coors.coordinates, dist[cur_coors]});
             std::reverse(path.begin(), path.end());
-            return path;
+            return {path, open.size() + closed.size()};
         }
         for (auto x : graph->get_neighbours(v.coordinates)) {
             if (!closed.was_expanded(x)) {
@@ -280,7 +283,7 @@ Path<Cell> lowLevelEcbs(Graph<TimedCell> *graph, TimedCell start, TimedCell goal
         }
     }
 
-    return Path<Cell>();
+    return {Path<Cell>(), 0};
 }
 
 bool highLevelFocalComparator(const ECBSHighLevelNode& a, const ECBSHighLevelNode& b) {
@@ -288,7 +291,7 @@ bool highLevelFocalComparator(const ECBSHighLevelNode& a, const ECBSHighLevelNod
     return std::make_tuple(a.focal_heuristic, a.cost.value(), a.LB) > std::make_tuple(b.focal_heuristic, b.cost.value(), b.LB);
 }
 
-vector<Path<Cell>> ECBS::find_paths(const vector<std::pair<Cell, Cell>> &tasks) {
+std::tuple<vector<Path<Cell>>, size_t, size_t> ECBS::find_paths(const vector<std::pair<Cell, Cell>> &tasks) {
     // initialization
 
 #ifdef VERBOSE
@@ -298,6 +301,8 @@ vector<Path<Cell>> ECBS::find_paths(const vector<std::pair<Cell, Cell>> &tasks) 
 #endif
 
 
+    size_t expanded_nodes = 0;
+    size_t low_level_expanded_nodes = 0;
     size_t actors = tasks.size();
     auto low_graph = AStarGridGraph(grid);
     auto root_node = ECBSHighLevelNode(actors);
@@ -306,8 +311,10 @@ vector<Path<Cell>> ECBS::find_paths(const vector<std::pair<Cell, Cell>> &tasks) 
     for (size_t i = 0; i < actors; i++) {
         auto[start, goal] = tasks[i];
         double f1_min = 0.0;
-        root_node.solution[i] = astarF1Min(&low_graph, start, goal,
-                                           f1_min);
+        auto [astar_solution, expanded] = astarF1Min(&low_graph, start, goal,
+                                                     f1_min);
+        root_node.solution[i] = astar_solution;
+        low_level_expanded_nodes += expanded;
         root_node.LB += f1_min;
         root_node.agent_f1_min[i] = f1_min;
     }
@@ -373,12 +380,13 @@ vector<Path<Cell>> ECBS::find_paths(const vector<std::pair<Cell, Cell>> &tasks) 
     while (!open.empty()) {
         // Update focal
         {
+            expanded_nodes += 1;
             double old_f1_min = high_f1_min;
 
             if(!open.begin()->cost.has_value())
                 // no solution
                 // todo: ?????
-                return vector<Path<Cell>>();
+                return {vector<Path<Cell>>(), 0, 0};
 
             high_f1_min = open.begin()->LB;
 
@@ -414,7 +422,7 @@ vector<Path<Cell>> ECBS::find_paths(const vector<std::pair<Cell, Cell>> &tasks) 
         EdgeConflict  edgeConflict = v.findEdgeConflict();
         if (!conflict.has_value()) {
             if (edgeConflict.empty()) {
-                return v.solution;
+                return {v.solution, expanded_nodes, low_level_expanded_nodes};
             }
             for (auto[actor, edge]: edgeConflict) {
                 auto new_node = v;
@@ -424,12 +432,13 @@ vector<Path<Cell>> ECBS::find_paths(const vector<std::pair<Cell, Cell>> &tasks) 
                                                        new_node.edge_conflicts[actor]);
                 double f1_min = 0.0;
 
-                Path<Cell> new_path = lowLevelEcbs(
+                auto [new_path, expanded] = lowLevelEcbs(
                         &left_low_graph, TimedCell{tasks[actor].first, 0},
                         TimedCell{tasks[actor].second, 0},
                         w,
                         actor,
                         new_node.solution, f1_min);
+                low_level_expanded_nodes += expanded;
                 new_node.solution[actor] = Path<Cell>();
                 new_node.LB -= new_node.agent_f1_min[actor];
                 new_node.LB += f1_min;
@@ -486,12 +495,13 @@ vector<Path<Cell>> ECBS::find_paths(const vector<std::pair<Cell, Cell>> &tasks) 
                                                    new_node.edge_conflicts[actor]);
             double f1_min = 0.0;
 
-            Path<Cell> new_path = lowLevelEcbs(
+            auto [new_path, expanded] = lowLevelEcbs(
                     &left_low_graph, TimedCell{tasks[actor].first, 0},
                     TimedCell{tasks[actor].second, 0},
                     w,
                     actor,
                     new_node.solution, f1_min);
+            low_level_expanded_nodes += expanded;
             new_node.solution[actor] = Path<Cell>();
             new_node.LB -= new_node.agent_f1_min[actor];
             new_node.LB += f1_min;
@@ -536,7 +546,7 @@ vector<Path<Cell>> ECBS::find_paths(const vector<std::pair<Cell, Cell>> &tasks) 
             }
         }
     }
-    return vector<Path<Cell>>();
+    return {vector<Path<Cell>>(), 0, 0};
 }
 
 

@@ -27,7 +27,7 @@ public:
         for (const auto &task:firstNTasks) {
             cell_tasks.emplace_back(Cell({task.start.x, task.start.y}), Cell({task.finish.x, task.finish.y}));
         }
-        auto paths = cbs.find_paths(cell_tasks);
+        auto [paths, hl, ll] = cbs.find_paths(cell_tasks);
         ASSERT_EQ(paths.size(), cell_tasks.size());
         for (int i = 0; i < (int) paths.size(); i++) {
             ASSERT_TRUE(paths[i][0].coordinates == cell_tasks[i].first);
