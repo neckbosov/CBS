@@ -1,6 +1,7 @@
 from stats import run_algo
-filename = 'result_optimal.txt'
+filename = 'result_afs_comp.txt'
 import os
+import time
 
 import tqdm
 from collections import defaultdict
@@ -26,44 +27,53 @@ def read_paths(filename=filename):
     return dict(agents_path)
 
 # test num takes index in range(0, num_repetitions)
-def optimal_rate(alg_name, map_name, scen_name, num_agents, num_repetitions, w=None):
+def compare_rate(map_name, scen_name, num_agents, num_repetitions, w=None):
     rate = 0
     count_done = 0
     for i in tqdm.tqdm(range(num_repetitions)):
-        done = run_algo(alg=alg_name,
+
+        start = time.time()
+
+        done = run_algo(alg='ECBS',
                         dest_file=filename,
                         map_path=os.path.join(os.curdir, 'data', 'maps', 'mapf', map_name),
                         scen_path=os.path.join(os.curdir, 'data', 'scens', 'mapf', scen_name),
                         tasks_count=num_agents,
                         test_num=i,
                         w=w)
+
+        seconds = int(time.time() - start)
+
         if not done:
             continue
 
-        sub_optimal_paths = read_paths(filename)
+        ecbs_paths = read_paths(filename)
 
-        done = run_algo(alg='CBS',
+
+        done = run_algo(alg='AFS',
                         dest_file=filename,
                         map_path=os.path.join(os.curdir, 'data', 'maps', 'mapf', map_name),
                         scen_path=os.path.join(os.curdir, 'data', 'scens', 'mapf', scen_name),
                         tasks_count=num_agents,
-                        test_num=i)
+                        test_num=i,
+                        w=seconds)
+
 
         if not done:
             continue
 
-        optimal_paths = read_paths(filename)
+        afs_paths = read_paths(filename)
 
-        if len(optimal_paths.keys()) == 0:
+        if len(afs_paths.keys()) == 0:
             continue
 
         rates = []
-        for key in optimal_paths.keys():
-            optimal_len = len(optimal_paths[key])
-            sub_optimal_len = len(sub_optimal_paths[key])
+        for key in afs_paths.keys():
+            afs_len = len(afs_paths[key])
+            ecbs_len = len(ecbs_paths[key])
             #print(optimal_len, sub_optimal_len)
-            if optimal_len != 0:
-                rates.append((sub_optimal_len, optimal_len))
+            if afs_len != 0 and ecbs_len != 0:
+                rates.append((ecbs_len, afs_len))
 
         if rates:
             rate += sum(x for x, _ in rates) / (sum(y for _, y in rates))
@@ -78,11 +88,8 @@ random_map, random_scen = 'random-32-32-20.map', 'random-32-32-20-even-10.scen'
 rate_list = []
 N = 10
 for num_actors in [1, 3, 5, 7, 10, 20, 40]:
-    rate = optimal_rate('ECBS', random_map, random_scen, num_actors, N, w=1.5)
-    print(f'Num actors :{num_actors}, Rate: {rate:.2f}%')
-    if rate <= 0.1:
-        print("too low rate, stopping here")
-        break
+    rate = compare_rate(random_map, random_scen, num_actors, N, w=1.5)
+    print(f'Num actors :{num_actors}, Rate: (ecbs len) / (afs len) {rate:.2f}%')
     rate_list.append(rate)
 
 print(rate_list)
