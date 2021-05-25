@@ -9,5 +9,3 @@ mkdir build && cd build && cmake .. && make -j6 && cd ..
 ```
 
 Запуск тестов: `./build/test/CBS_tst`
-
-Бенчмарки находятся в `Benchmarks.ipynb`
