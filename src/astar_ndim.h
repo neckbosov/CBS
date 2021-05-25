@@ -60,7 +60,7 @@ private:
     vector<vector<int>> grid;
 public:
     explicit AstarNDim(vector<std::string> raw_grid);
-    vector<Path<Cell>> find_paths(const vector<std::pair<Cell, Cell>> &tasks);
+    std::pair<vector<Path<Cell>>, size_t> find_paths(const vector<std::pair<Cell, Cell>> &tasks);
 };
 
 #endif //CBS_ASTAR_NDIM_H

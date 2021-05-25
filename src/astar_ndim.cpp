@@ -65,7 +65,7 @@ AstarNDim::AstarNDim(vector<std::string> raw_grid) {
     }
 }
 
-vector<Path<Cell>> AstarNDim::find_paths(const vector<std::pair<Cell, Cell>> &tasks) {
+std::pair<vector<Path<Cell>>, size_t> AstarNDim::find_paths(const vector<std::pair<Cell, Cell>> &tasks) {
     auto astar_ndim = AstarNDimGraph(grid);
     vector<Cell> start_coors(tasks.size()), goal_coors(tasks.size());
     for (size_t i = 0; i < tasks.size(); i++) {
@@ -73,12 +73,12 @@ vector<Path<Cell>> AstarNDim::find_paths(const vector<std::pair<Cell, Cell>> &ta
         goal_coors[i] = tasks[i].second;
     }
     NCoors start{start_coors}, goal{goal_coors};
-    auto ndim_path = astar(&astar_ndim, start, goal);
+    auto[ndim_path, expanded] = astar(&astar_ndim, start, goal);
     vector<Path<Cell>> res(tasks.size());
     for (auto ndim_node : ndim_path) {
         for (size_t i = 0; i < ndim_node.coordinates.coors.size(); i++) {
             res[i].push_back(TimedCell{ndim_node.coordinates.coors[i], ndim_node.time});
         }
     }
-    return res;
+    return {res, expanded};
 }
