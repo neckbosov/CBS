@@ -23,7 +23,7 @@ TEST(AStarTest, AStarSimple) {
     Map map = Map("../data/maps/one-way-simple.map");
     std::vector<Task> tasks = Task::fromMovingAI("../data/scens/astar/one-way-simple.scen");
     for (const auto &task:tasks) {
-        auto path = astar(&map, task.start, task.finish);
+        auto [path, hl] = astar(&map, task.start, task.finish);
         auto result = count_path_len(&map, path);
         ASSERT_TRUE(std::abs(result - task.bestDistance) < EPS);
         ASSERT_TRUE(path[0].coordinates == task.start);
@@ -36,7 +36,7 @@ TEST(AStarTest, AStarMaze) {
     std::vector<Task> tasks = Task::fromMovingAI("../data/scens/astar/maze512-16-0.map.scen");
     for (int i = 0; i < (int) tasks.size(); i += 50 * (int) log(i + 10)) {
         Task task = tasks[i];
-        auto path = astar(&map, task.start, task.finish);
+        auto [path, ll] = astar(&map, task.start, task.finish);
         auto result = count_path_len(&map, path);
         ASSERT_TRUE(std::abs(result - task.bestDistance) < EPS);
         ASSERT_TRUE(path[0].coordinates == task.start);
@@ -49,7 +49,7 @@ TEST(AStarTest, AStarBoston) {
     std::vector<Task> tasks = Task::fromMovingAI("../data/scens/astar/Boston_0_256.map.scen");
     for (int i = 0; i < (int)tasks.size(); i += 10) {
         Task task = tasks[i];
-        auto path = astar(&map, task.start, task.finish);
+        auto [path, ll] = astar(&map, task.start, task.finish);
         auto result = count_path_len(&map, path);
         ASSERT_TRUE(std::abs(result - task.bestDistance) < EPS);
         ASSERT_TRUE(path[0].coordinates == task.start);

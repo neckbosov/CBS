@@ -156,32 +156,39 @@ EdgeConflict CBSHighLevelNode::find_edge_conflict() const {
 }
 
 
-vector<Path<Cell>> CBS::find_paths(const vector<std::pair<Cell, Cell>> &tasks) {
+std::tuple<vector<Path<Cell>>, size_t, size_t> CBS::find_paths(const vector<std::pair<Cell, Cell>> &tasks) {
+    size_t expanded_nodes = 0;
+    size_t low_level_expanded = 0;
     size_t actors = tasks.size();
     auto low_graph = AStarGridGraph(grid);
     auto root_node = CBSHighLevelNode(actors);
     for (size_t i = 0; i < actors; i++) {
         auto[start, goal] = tasks[i];
-        root_node.solution[i] = astar(&low_graph, start, goal);
+        auto [astar_solution, expanded] = astar(&low_graph, start, goal);
+        low_level_expanded += expanded;
+        root_node.solution[i] = astar_solution;
     }
     root_node.update_cost();
     std::priority_queue<CBSHighLevelNode, vector<CBSHighLevelNode>, std::greater<>> q;
     q.push(root_node);
+
     while (!q.empty()) {
         CBSHighLevelNode node = q.top();
         q.pop();
+        expanded_nodes += 1;
         VertexConflict conflict = node.find_vertex_conflict();
         if (!conflict.has_value()) {
             auto edge_conflict = node.find_edge_conflict();
             if (edge_conflict.empty()) {
-                return node.solution;
+                return std::make_tuple(node.solution, expanded_nodes, low_level_expanded);
             }
             for (auto[actor, edge]: edge_conflict) {
                 auto new_node = node;
                 new_node.edge_conflicts[actor].insert(edge);
                 auto left_low_graph = CBSLowLevelGraph(grid, new_node.vertex_conflicts[actor], new_node.edge_conflicts[actor]);
-                auto new_path = astar(&left_low_graph, TimedCell{tasks[actor].first, 0},
+                auto [new_path, expanded] = astar(&left_low_graph, TimedCell{tasks[actor].first, 0},
                                       TimedCell{tasks[actor].second, 0});
+                low_level_expanded += expanded;
 //            std::cout << "new path for actor " << actor << std::endl;
 //            for (auto v : new_path) {
 //                std::cout << "Time: " << v.time << " x: " << v.coordinates.coordinates.x << " y: "
@@ -215,8 +222,9 @@ vector<Path<Cell>> CBS::find_paths(const vector<std::pair<Cell, Cell>> &tasks) {
             auto new_node = node;
             new_node.vertex_conflicts[actor].insert(timedCell);
             auto left_low_graph = CBSLowLevelGraph(grid, new_node.vertex_conflicts[actor], new_node.edge_conflicts[actor]);
-            auto new_path = astar(&left_low_graph, TimedCell{tasks[actor].first, 0},
+            auto [new_path, expanded] = astar(&left_low_graph, TimedCell{tasks[actor].first, 0},
                                   TimedCell{tasks[actor].second, 0});
+            low_level_expanded += expanded;
 //            std::cout << "new path for actor " << actor << std::endl;
 //            for (auto v : new_path) {
 //                std::cout << "Time: " << v.time << " x: " << v.coordinates.coordinates.x << " y: "
@@ -233,5 +241,5 @@ vector<Path<Cell>> CBS::find_paths(const vector<std::pair<Cell, Cell>> &tasks) {
             }
         }
     }
-    return vector<Path<Cell>>();
+    return std::make_tuple(vector<Path<Cell>>(), 0, 0);
 }

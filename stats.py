@@ -2,7 +2,8 @@ import subprocess
 import os
 from typing import Optional
 
-EXE = os.curdir + '/cmake-build-release/src/CBS_run'
+EXE = os.path.join(os.curdir, 'cmake-build-release', 'src', 'CBS_run')
+
 
 
 def run_algo(alg: str, dest_file: str, map_path: str, scen_path: str, tasks_count: int, test_num: int,
@@ -16,3 +17,9 @@ def run_algo(alg: str, dest_file: str, map_path: str, scen_path: str, tasks_coun
     except subprocess.TimeoutExpired:
         return False
 
+if __name__ == '__main__':
+    print(run_algo(alg='ECBS', dest_file='result.txt',
+             map_path=os.path.join(os.curdir, 'data', 'maps', 'mapf', 'brc202d.map'),
+             scen_path=os.path.join(os.curdir, 'data', 'scens', 'mapf', 'brc202d-even-1.scen'),
+             tasks_count=1,
+             test_num=100, w=1.5))

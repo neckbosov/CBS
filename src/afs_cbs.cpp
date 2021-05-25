@@ -31,7 +31,8 @@ vector<Path<Cell>> AFS_CBS::find_paths(const vector<std::pair<Cell, Cell>> &task
     id++;
     for (size_t i = 0; i < actors; i++) {
         auto[start, goal] = tasks[i];
-        root_node.solution[i] = astar(&low_graph, start, goal);
+        auto [astar_solution, expanded] =  astar(&low_graph, start, goal);
+        root_node.solution[i] = astar_solution;
     }
     root_node.update_cost();
     root_node.update_h();
