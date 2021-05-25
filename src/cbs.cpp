@@ -33,7 +33,6 @@ std::vector<Cell> AStarGridGraph::get_neighbours(Cell coors) {
             cur_cell.y < (int) source_cells.back().size() && source_cells[cur_cell.x][cur_cell.y] == 0) {
             res.push_back(cur_cell);
         }
-
     }
     return res;
 }

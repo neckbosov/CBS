@@ -5,6 +5,7 @@
 #include "ecbs.h"
 #include "task.h"
 #include "util.h"
+#include "astar_ndim.h"
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -41,6 +42,15 @@ vector<Path<Cell>> run_AFS(const Map &map, const vector<Task> &tasks, int timeou
     return afs.find_paths(cell_tasks, timeout);
 }
 
+std::pair<vector<Path<Cell>>, size_t> run_ASTAR(const Map &map, const vector<Task> &tasks) {
+    auto astar_ndim = AstarNDim(map.generate_raw_grid());
+    auto cell_tasks = vector<std::pair<Cell, Cell>>();
+    for (const auto &task : tasks) {
+        cell_tasks.emplace_back(Cell({task.start.x, task.start.y}), Cell({task.finish.x, task.finish.y}));
+    }
+    return astar_ndim.find_paths(cell_tasks);
+}
+
 int main(int argc, char **argv) {
     std::filesystem::path res_path(argv[1]);
     std::string alg(argv[2]);
@@ -62,19 +72,23 @@ int main(int argc, char **argv) {
     size_t expanded = 0;
     size_t low_expanded = 0;
     if (alg == "CBS") {
-        auto [cbs_paths,  hl_ex, ll_ex] = run_CBS(map, tasks);
+        auto[cbs_paths, hl_ex, ll_ex] = run_CBS(map, tasks);
         paths = cbs_paths;
         expanded = hl_ex;
         low_expanded = ll_ex;
     } else if (alg == "ECBS") {
         double w = atof(argv[7]);
-        auto [ecbs_paths, hl_ex, ll_ex] = run_ECBS(map, tasks, w);
+        auto[ecbs_paths, hl_ex, ll_ex] = run_ECBS(map, tasks, w);
         paths = ecbs_paths;
         expanded = hl_ex;
         low_expanded = ll_ex;
     } else if (alg == "AFS") {
         int timeout = atoi(argv[7]);
         paths = run_AFS(map, tasks, timeout);
+    } else if (alg == "ASTAR") {
+        auto[astar_paths, ex] = run_ASTAR(map, tasks);
+        paths = astar_paths;
+        expanded = ex;
     }
     print_paths_to_file(paths, res_path.string(), expanded, low_expanded);
 
