@@ -144,3 +144,9 @@ TEST(CBSTest, CBSCoastSmall4) {
                      "../data/scens/mapf/w_woundedcoast-even-1.scen",
                      200, 203);
 }
+
+TEST(CBSTest, CBSden520dLarge1) {
+    CBSTest::testCBS("../data/maps/mapf/den520d.map",
+                     "../data/scens/mapf/den520d-even-1.scen",
+                     196, 210);
+}

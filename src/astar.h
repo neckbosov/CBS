@@ -96,6 +96,7 @@ template<typename Coordinates, typename Compare = std::greater<Node<Coordinates>
 std::pair<Path<Coordinates>, size_t>
 astar(Graph<Coordinates> *graph, Coordinates start, Coordinates goal,
       Compare comp = std::greater<Node<Coordinates>>()) {
+//    std::cout << "astar started" << std::endl;
     size_t expanded_nodes = 0;
     auto open = Open<Coordinates>(comp);
     std::unordered_map<Coordinates, Coordinates> real_parent;
@@ -107,12 +108,15 @@ astar(Graph<Coordinates> *graph, Coordinates start, Coordinates goal,
     dist[start] = 0.0;
     while (!open.empty()) {
         auto v = open.get_best_node();
+//        std::cout << "iter" << std::endl;
+//        std::cout << v.<< ' ' << v.coordinates.y << std::endl;
         if (closed.was_expanded(v.coordinates)) {
             continue;
         }
         closed.add_node(v.coordinates);
         real_parent[v.coordinates] = v.parent;
         dist[v.coordinates] = v.g_value;
+//        std::cout << "added parent" << std::endl;
         if (graph->is_same_point(v.coordinates, goal)) {
             Path<Coordinates> path;
             auto cur_coors = v.coordinates;
@@ -126,6 +130,7 @@ astar(Graph<Coordinates> *graph, Coordinates start, Coordinates goal,
             return std::make_pair(path, expanded_nodes);
         }
         for (auto x : graph->get_neighbours(v.coordinates)) {
+//            std::cout << "neighbour" << std::endl;
             if (!closed.was_expanded(x)) {
                 auto nodeX = Node<Coordinates>(x, v.g_value + graph->get_cost(v.coordinates, x),
                                                graph->get_h_value(goal, x),
