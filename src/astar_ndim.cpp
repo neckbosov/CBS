@@ -4,6 +4,7 @@
 
 #include "astar_ndim.h"
 #include <cmath>
+#include <iostream>
 
 double AstarNDimGraph::get_cost(NCoors a, NCoors b) {
     return 1.0;
@@ -24,18 +25,19 @@ void fill_moves(const vector<vector<Cell>> &directions, size_t pos, NCoors cur, 
     }
     for (const auto &direction : directions[pos]) {
         auto new_coors = cur;
-        new_coors.coors[pos] = new_coors.coors[pos] + direction;
+        new_coors.coors[pos] = direction;
         fill_moves(directions, pos + 1, new_coors, buf);
     }
 }
 
 std::vector<NCoors> AstarNDimGraph::get_neighbours(NCoors coors) {
+//    std::cout << "get neighcbours" << std::endl;
     vector<Cell> directions{{0,  1},
                             {1,  0},
                             {0,  -1},
                             {-1, 0},
                             {0,  0}};
-    vector<vector<Cell>> res;
+    vector<vector<Cell>> res(coors.coors.size());
     for (Cell mv: directions) {
         for (size_t i = 0; i < coors.coors.size(); i++) {
             Cell cur_cell = coors.coors[i] + mv;
@@ -46,6 +48,7 @@ std::vector<NCoors> AstarNDimGraph::get_neighbours(NCoors coors) {
         }
     }
     vector<NCoors> ans;
+//    std::cout << "fill moves" << std::endl;
     fill_moves(res, 0, coors, ans);
     return ans;
 }
