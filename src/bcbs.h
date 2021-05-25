@@ -63,7 +63,6 @@ public:
                                   std::set<BCBSHighLevelNode, Cmp2> &focal,
                                   int &id, clock_t tStart, long seconds_limit) {
         while (!focal.empty() && 1.0L * (clock() - tStart) / CLOCKS_PER_SEC <= 1.0L * seconds_limit) {
-//            std::cout << focal.size() << ' ' << open.size() << std::endl;
             BCBSHighLevelNode min_open = *open.begin();
             if (!min_open.cost.has_value()) {
                 // no solution
@@ -74,9 +73,7 @@ public:
             open.erase(node);
             VertexConflict conflict = node.find_vertex_conflict();
             double cost_min = min_open.cost.value();
-//            std::cout << cost_min << std::endl;
             if (!conflict.has_value()) {
-//                std::cout << "no vertex conflict" << std::endl;
                 auto edge_conflict = node.find_edge_conflict();
                 if (edge_conflict.empty()) {
                     return node.solution;
@@ -106,9 +103,7 @@ public:
                 continue;
             }
             auto[actor1, actor2, timedCell] = conflict.value();
-//            std::cout << "vertex conflict " << actor1 << ' ' << actor2 << std::endl;
             for (auto actor: {actor1, actor2}) {
-//                std::cout << "current actor " << actor << std::endl;
                 auto new_node = node;
                 new_node.id = id;
                 id++;
@@ -117,7 +112,6 @@ public:
                                                        new_node.edge_conflicts[actor]);
                 auto [new_path, expanded] = astar(&left_low_graph, TimedCell{tasks[actor].first, 0},
                                       TimedCell{tasks[actor].second, 0});
-//                std::cout << "astar ok " << std::endl;
                 new_node.solution[actor] = Path<Cell>();
                 for (auto[cell, new_time]: new_path) {
                     new_node.solution[actor].push_back(TimedCell{cell.coordinates, new_time});

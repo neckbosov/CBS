@@ -291,7 +291,7 @@ bool highLevelFocalComparator(const ECBSHighLevelNode& a, const ECBSHighLevelNod
     return std::make_tuple(a.focal_heuristic, a.cost.value(), a.LB) > std::make_tuple(b.focal_heuristic, b.cost.value(), b.LB);
 }
 
-std::tuple<vector<Path<Cell>>, size_t, size_t> ECBS::find_paths(const vector<std::pair<Cell, Cell>> &tasks) {
+std::tuple<vector<Path<Cell>>, Statistics> ECBS::find_paths(const vector<std::pair<Cell, Cell>> &tasks) {
     // initialization
 
 #ifdef VERBOSE
@@ -301,8 +301,7 @@ std::tuple<vector<Path<Cell>>, size_t, size_t> ECBS::find_paths(const vector<std
 #endif
 
 
-    size_t expanded_nodes = 0;
-    size_t low_level_expanded_nodes = 0;
+    Statistics stats = Statistics(grid);
     size_t actors = tasks.size();
     auto low_graph = AStarGridGraph(grid);
     auto root_node = ECBSHighLevelNode(actors);
@@ -314,7 +313,7 @@ std::tuple<vector<Path<Cell>>, size_t, size_t> ECBS::find_paths(const vector<std
         auto [astar_solution, expanded] = astarF1Min(&low_graph, start, goal,
                                                      f1_min);
         root_node.solution[i] = astar_solution;
-        low_level_expanded_nodes += expanded;
+        stats.low_level_expanded += expanded;
         root_node.LB += f1_min;
         root_node.agent_f1_min[i] = f1_min;
     }
@@ -380,13 +379,13 @@ std::tuple<vector<Path<Cell>>, size_t, size_t> ECBS::find_paths(const vector<std
     while (!open.empty()) {
         // Update focal
         {
-            expanded_nodes += 1;
+            stats.high_level_expanded += 1;
             double old_f1_min = high_f1_min;
 
             if(!open.begin()->cost.has_value())
                 // no solution
                 // todo: ?????
-                return {vector<Path<Cell>>(), 0, 0};
+                return {vector<Path<Cell>>(), stats};
 
             high_f1_min = open.begin()->LB;
 
@@ -422,7 +421,7 @@ std::tuple<vector<Path<Cell>>, size_t, size_t> ECBS::find_paths(const vector<std
         EdgeConflict  edgeConflict = v.findEdgeConflict();
         if (!conflict.has_value()) {
             if (edgeConflict.empty()) {
-                return {v.solution, expanded_nodes, low_level_expanded_nodes};
+                return {v.solution, stats};
             }
             for (auto[actor, edge]: edgeConflict) {
                 auto new_node = v;
@@ -438,7 +437,7 @@ std::tuple<vector<Path<Cell>>, size_t, size_t> ECBS::find_paths(const vector<std
                         w,
                         actor,
                         new_node.solution, f1_min);
-                low_level_expanded_nodes += expanded;
+                stats.low_level_expanded += expanded;
                 new_node.solution[actor] = Path<Cell>();
                 new_node.LB -= new_node.agent_f1_min[actor];
                 new_node.LB += f1_min;
@@ -482,9 +481,11 @@ std::tuple<vector<Path<Cell>>, size_t, size_t> ECBS::find_paths(const vector<std
                     open.insert(new_node);
                 }
             }
+            continue;
         }
 
         auto[actor1, actor2, timedCell] = conflict.value();
+        stats.conflicts_grid[timedCell.coordinates.x][timedCell.coordinates.y]++;
         if (verbose)
             std::cout << "Found conflict: a1:" << actor1 << " a2:" << actor2 << " cell: " << showTimedCell(timedCell) << '\n';
 
@@ -501,7 +502,7 @@ std::tuple<vector<Path<Cell>>, size_t, size_t> ECBS::find_paths(const vector<std
                     w,
                     actor,
                     new_node.solution, f1_min);
-            low_level_expanded_nodes += expanded;
+            stats.low_level_expanded += expanded;
             new_node.solution[actor] = Path<Cell>();
             new_node.LB -= new_node.agent_f1_min[actor];
             new_node.LB += f1_min;
@@ -546,7 +547,7 @@ std::tuple<vector<Path<Cell>>, size_t, size_t> ECBS::find_paths(const vector<std
             }
         }
     }
-    return {vector<Path<Cell>>(), 0, 0};
+    return {vector<Path<Cell>>(), stats};
 }
 
 

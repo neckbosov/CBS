@@ -15,7 +15,7 @@
 
 using std::vector;
 
-std::tuple<vector<Path<Cell>>, size_t, size_t> run_CBS(const Map &map, const vector<Task> &tasks) {
+std::tuple<vector<Path<Cell>>, Statistics> run_CBS(const Map &map, const vector<Task> &tasks) {
     auto cbs = CBS(map.generate_raw_grid());
     auto cell_tasks = vector<std::pair<Cell, Cell>>();
     for (const auto &task : tasks) {
@@ -24,7 +24,7 @@ std::tuple<vector<Path<Cell>>, size_t, size_t> run_CBS(const Map &map, const vec
     return cbs.find_paths(cell_tasks);
 }
 
-std::tuple<vector<Path<Cell>>, size_t, size_t> run_ECBS(const Map &map, const vector<Task> &tasks, double w) {
+std::tuple<vector<Path<Cell>>, Statistics> run_ECBS(const Map &map, const vector<Task> &tasks, double w) {
     auto ecbs = ECBS(w, map.generate_raw_grid());
     auto cell_tasks = vector<std::pair<Cell, Cell>>();
     for (const auto &task : tasks) {
@@ -72,16 +72,16 @@ int main(int argc, char **argv) {
     size_t expanded = 0;
     size_t low_expanded = 0;
     if (alg == "CBS") {
-        auto[cbs_paths, hl_ex, ll_ex] = run_CBS(map, tasks);
+        auto[cbs_paths, stats] = run_CBS(map, tasks);
         paths = cbs_paths;
-        expanded = hl_ex;
-        low_expanded = ll_ex;
+        expanded = stats.high_level_expanded;
+        low_expanded = stats.low_level_expanded;
     } else if (alg == "ECBS") {
         double w = atof(argv[7]);
-        auto[ecbs_paths, hl_ex, ll_ex] = run_ECBS(map, tasks, w);
+        auto[ecbs_paths, stats] = run_ECBS(map, tasks, w);
         paths = ecbs_paths;
-        expanded = hl_ex;
-        low_expanded = ll_ex;
+        expanded = stats.high_level_expanded;
+        low_expanded = stats.low_level_expanded;
     } else if (alg == "AFS") {
         int timeout = atoi(argv[7]);
         paths = run_AFS(map, tasks, timeout);

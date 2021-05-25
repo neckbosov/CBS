@@ -7,6 +7,7 @@
 
 #include "graph.h"
 #include "astar.h"
+#include "util.h"
 #include <functional>
 #include <vector>
 #include <unordered_set>
@@ -144,7 +145,7 @@ private:
 public:
     explicit CBS(vector<std::string> raw_grid);
 
-    std::tuple<vector<Path<Cell>>, size_t, size_t> find_paths(const vector<std::pair<Cell, Cell>> &tasks);
+    std::tuple<vector<Path<Cell>>, Statistics> find_paths(const vector<std::pair<Cell, Cell>> &tasks);
 };
 
 #endif //COURSE_PROJECT_CBS_H

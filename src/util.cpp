@@ -6,7 +6,6 @@
 #include "vector"
 #include "string"
 #include "cbs.h"
-#include "util.h"
 
 void print_paths_to_file(const std::vector<Path<Cell>>& paths, const std::string& filename,
                          size_t hl_expanded, size_t ll_expanded) {
@@ -21,4 +20,12 @@ void print_paths_to_file(const std::vector<Path<Cell>>& paths, const std::string
         agent++;
     }
     out.close();
+}
+
+Statistics::Statistics(const std::vector<vector<int>> &grid) {
+    high_level_expanded = 0;
+    low_level_expanded = 0;
+    conflicts_grid = vector<vector<int>>(grid.size(), vector<int>(grid[0].size(), 0));
+    num_of_edge_conflicts = 0;
+    num_of_vertex_conflicts = 0;
 }

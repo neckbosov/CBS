@@ -37,7 +37,7 @@ private:
 public:
     explicit ECBS(double w, vector<std::string> raw_grid);
 
-    std::tuple<vector<Path<Cell>>, size_t, size_t> find_paths(const vector<std::pair<Cell, Cell>> &tasks);
+    std::tuple<vector<Path<Cell>>, Statistics> find_paths(const vector<std::pair<Cell, Cell>> &tasks);
 
 };
 
