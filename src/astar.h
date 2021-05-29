@@ -10,23 +10,18 @@
 #include <algorithm>
 #include <iostream>
 #include "graph.h"
-#include <boost/heap/binomial_heap.hpp>
-#include <boost/heap/pairing_heap.hpp>
 #include <boost/heap/d_ary_heap.hpp>
-#include <boost/heap/fibonacci_heap.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>
 #include <boost/container_hash/hash.hpp>
 
 template<typename Coordinates, typename Compare=std::greater<Node<Coordinates>>>
-using astar_heap = boost::heap::d_ary_heap<Node<Coordinates>, boost::heap::arity<2>, boost::heap::compare<Compare>>;
+using astar_heap = boost::heap::d_ary_heap<Node<Coordinates>, boost::heap::arity<3>, boost::heap::compare<Compare>>;
 
 template<typename Coordinates, typename Compare=std::greater<Node<Coordinates>>>
 class Open {
 private:
     astar_heap<Coordinates, Compare> elements;
-//    boost::unordered_map<Coordinates, double> cur_vals;
-//    boost::unordered_map<Coordinates, typename astar_heap<Coordinates, Compare>::handle_type> handles;
 public:
     size_t size() {
         return elements.size();
@@ -38,24 +33,12 @@ public:
 
     Node<Coordinates> get_best_node() {
         auto res = elements.top();
-//        cur_vals.erase(res.coordinates);
-//        handles.erase(res.coordinates);
         elements.pop();
         return res;
     }
 
     void add_node(Node<Coordinates> node) {
         elements.push(node);
-//        auto it = cur_vals.find(node.coordinates);
-//        if (it != cur_vals.end()) {
-//            if (it->second > node.f_value) {
-//                elements.increase(handles[node.coordinates], node);
-//                cur_vals[node.coordinates] = node.f_value;
-//            }
-//        } else {
-//            cur_vals[node.coordinates] = node.f_value;
-//            handles[node.coordinates] = elements.push(node);
-//        }
     }
 
     Open() {
@@ -65,7 +48,6 @@ public:
 
     explicit Open(Compare comp) {
         elements = astar_heap<Coordinates, Compare>(comp);
-//        elements = std::priority_queue<Node<Coordinates>, std::vector<Node<Coordinates>>, Compare>(comp);
     }
 };
 
@@ -108,17 +90,6 @@ std::size_t hash_value(TimedCoordinates<Coordinates> const &value) {
     boost::hash_combine(seed, value.time);
     return seed;
 }
-
-//namespace std {
-//    template<typename Coordinates>
-//    struct hash<TimedCoordinates<Coordinates>> {
-//        size_t operator()(const TimedCoordinates<Coordinates> &timedCoordinates) const {
-//            auto int_hasher = hash<int>();
-//            auto coors_hasher = hash<Coordinates>();
-//            return (int_hasher(timedCoordinates.time) << 1) ^ coors_hasher(timedCoordinates.coordinates);
-//        }
-//    };
-//}
 
 template<typename Coordinates>
 using Path = std::vector<TimedCoordinates<Coordinates>>;

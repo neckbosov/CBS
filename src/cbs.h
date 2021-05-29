@@ -9,7 +9,6 @@
 #include "astar.h"
 #include <functional>
 #include <vector>
-//#include <unordered_set>
 #include <cmath>
 #include <string>
 #include <utility>
@@ -59,26 +58,6 @@ struct TimedEdge {
 };
 
 std::size_t hash_value(TimedEdge const &value);
-
-
-//namespace std {
-//    template<>
-//    struct hash<Cell> {
-//        size_t operator()(const Cell &cell) const {
-//            auto int_hasher = hash<int>();
-//            return (int_hasher(cell.x) << 1) ^ int_hasher(cell.y);
-//        }
-//    };
-//
-//    template<>
-//    struct hash<TimedEdge> {
-//
-//        size_t operator()(const TimedEdge &edge) const {
-//            auto timed_cell_hasher = hash<TimedCell>();
-//            return (timed_cell_hasher(edge.first) << 1) ^ timed_cell_hasher(edge.second);
-//        }
-//    };
-//}
 
 class AStarGridGraph : public Graph<Cell> {
 public:
