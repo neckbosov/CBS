@@ -9,11 +9,13 @@
 #include "astar.h"
 #include "cbs.h"
 #include <vector>
-#include <unordered_map>
+//#include <unordered_map>
 #include <string>
+#include <boost/unordered_map.hpp>
+#include <boost/container_hash/hash.hpp>
 
 using std::vector;
-using std::unordered_map;
+//using std::unordered_map;
 
 struct NCoors {
     vector<Cell> coors;
@@ -27,19 +29,21 @@ struct NCoors {
     }
 };
 
-namespace std {
-    template<>
-    struct hash<NCoors> {
-        size_t operator()(const NCoors &coors) const {
-            std::size_t seed = coors.coors.size();
-            auto cell_hasher = hash<Cell>();
-            for (auto &i : coors.coors) {
-                seed ^= cell_hasher(i) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-            }
-            return seed;
-        }
-    };
-}
+std::size_t  hash_value(NCoors const &value) ;
+
+//namespace std {
+//    template<>
+//    struct hash<NCoors> {
+//        size_t operator()(const NCoors &coors) const {
+//            std::size_t seed = coors.coors.size();
+//            auto cell_hasher = hash<Cell>();
+//            for (auto &i : coors.coors) {
+//                seed ^= cell_hasher(i) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+//            }
+//            return seed;
+//        }
+//    };
+//}
 
 class AstarNDimGraph : public Graph<NCoors> {
 public:
@@ -60,6 +64,7 @@ private:
     vector<vector<int>> grid;
 public:
     explicit AstarNDim(vector<std::string> raw_grid);
+
     std::pair<vector<Path<Cell>>, size_t> find_paths(const vector<std::pair<Cell, Cell>> &tasks);
 };
 
