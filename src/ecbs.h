@@ -12,8 +12,8 @@
 struct ECBSHighLevelNode {
     vector<Path<Cell>> solution;
     vector<double> agent_f1_min;
-    vector<std::unordered_set<TimedCell>> vertex_conflicts;
-    vector<std::unordered_set<TimedEdge>> edge_conflicts;
+    vector<boost::unordered_set<TimedCell>> vertex_conflicts;
+    vector<boost::unordered_set<TimedEdge>> edge_conflicts;
 
     std::optional<int> cost;
     double LB;
