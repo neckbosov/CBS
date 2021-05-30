@@ -149,7 +149,7 @@ lowLevelEcbs(Graph<TimedCell> *graph, TimedCell start, TimedCell goal, double w,
     // We can't afford that!
 
     // time -> [(cell, agent_id)]
-    std::unordered_map<int, std::vector<std::pair<Cell, int>>> time_conflict_map;
+    boost::unordered_map<int, std::vector<std::pair<Cell, int>>> time_conflict_map;
 
     for (size_t i = 0; i < solution.size(); i++) {
         if (i == agent_id)

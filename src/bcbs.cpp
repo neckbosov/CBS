@@ -99,10 +99,14 @@ EdgeConflict BCBSHighLevelNode::find_edge_conflict() const {
         for (size_t j = 1; j < solution[i].size(); j++) {
             auto prev = solution[i][j - 1];
             auto cur = solution[i][j];
-            auto edge = TimedEdge{prev, cur};
+            auto rprev = cur;
+            auto rcur = prev;
+            rprev.time = prev.time;
+            rcur.time = cur.time;
+            auto edge = TimedEdge{rprev, rcur};
             auto it = passes.find(edge);
             if (it != passes.end()) {
-                return EdgeConflict({{i,          edge},
+                return EdgeConflict({{i,          TimedEdge{prev, cur}},
                                      {it->second, it->first}});
             } else {
                 passes[edge] = i;

@@ -16,7 +16,7 @@
 #include <boost/container_hash/hash.hpp>
 
 template<typename Coordinates, typename Compare=std::greater<Node<Coordinates>>>
-using astar_heap = boost::heap::d_ary_heap<Node<Coordinates>, boost::heap::arity<3>, boost::heap::compare<Compare>>;
+using astar_heap = boost::heap::d_ary_heap<Node<Coordinates>, boost::heap::arity<2>, boost::heap::compare<Compare>>;
 
 template<typename Coordinates, typename Compare=std::greater<Node<Coordinates>>>
 class Open {
