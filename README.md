@@ -1,6 +1,6 @@
 # CBS
 
-Зависимости: `g++`, `googletest`, `python`, `python-tqdm`, `jupyter`
+Зависимости: `g++`, `googletest`, `python`, `python-tqdm`, `jupyter`, `boost`
 
 Сборка:
 
