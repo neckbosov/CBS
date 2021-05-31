@@ -6,6 +6,7 @@
 #include "ecbs.h"
 #include <boost/unordered_map.hpp>
 #include <vector>
+#include <queue>
 
 using std::vector;
 
@@ -159,10 +160,18 @@ lowLevelEcbs(Graph<TimedCell> *graph, TimedCell start, TimedCell goal, double w,
     };
 
     auto f2 = lowLevelFocalComparator;
+    auto f3 = [](const FocalNode &a, const FocalNode &b) {
+        return std::make_tuple(a.f_value, a.g_value, a.h_value, a.coordinates.coordinates.x,
+                               a.coordinates.coordinates.y, a.coordinates.time) >
+               std::make_tuple(b.f_value, b.g_value, b.h_value, b.coordinates.coordinates.x,
+                               b.coordinates.coordinates.y, b.coordinates.time);
+    };
 
     std::set<FocalNode, decltype(f1)> open(f1);
+    std::priority_queue<FocalNode, std::vector<FocalNode>, decltype(f2)> focal(f2);
+    std::priority_queue<FocalNode, std::vector<FocalNode>, decltype(f3)> all_focal(f3);
     // Heap order is inverse!
-    auto focal = std::priority_queue<FocalNode, std::vector<FocalNode>, decltype(f2)>(f2);
+//    auto focal = std::priority_queue<FocalNode, std::vector<FocalNode>, decltype(f2)>(f2);
 
     auto closed = Closed<TimedCell>();
     auto start_focal_heuristic = time_conflict_map[start].size();
@@ -191,31 +200,14 @@ lowLevelEcbs(Graph<TimedCell> *graph, TimedCell start, TimedCell goal, double w,
 
             assert(f1_min >= old_f1_min);
 
-            if (f1_min > old_f1_min) {
-                auto iter = open.begin();
-                auto iter_end = open.end();
-                // todo: rewrite rebuilding
-                focal = std::priority_queue<FocalNode, std::vector<FocalNode>, decltype(f2)>(f2);
-                for (; iter != iter_end; ++iter) {
-                    auto val = iter->f_value;
-                    if (val <= f1_min * w) {
-                        focal.push(*iter);
-                    }
-                    if (val > f1_min * w) {
+            if (f1_min > old_f1_min || focal.empty()) {
+                while (!all_focal.empty()) {
+                    auto val = all_focal.top();
+                    if (val.f_value > f1_min * w) {
                         break;
                     }
-                }
-            } else if (focal.empty()) {
-                auto iter = open.begin();
-                auto iter_end = open.end();
-                for (; iter != iter_end; ++iter) {
-                    auto val = iter->f_value;
-                    if (val <= f1_min * w) {
-                        focal.push(*iter);
-                    }
-                    if (val > f1_min * w) {
-                        break;
-                    }
+                    focal.push(val);
+                    all_focal.pop();
                 }
             }
         }
@@ -265,6 +257,7 @@ lowLevelEcbs(Graph<TimedCell> *graph, TimedCell start, TimedCell goal, double w,
                                        v.focal_heuristic +
                                        focal_heuristic);
                 open.insert(nodeX);
+                all_focal.push(nodeX);
             }
         }
     }
