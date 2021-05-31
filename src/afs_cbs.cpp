@@ -31,7 +31,7 @@ vector<Path<Cell>> AFS_CBS::find_paths(const vector<std::pair<Cell, Cell>> &task
     id++;
     for (size_t i = 0; i < actors; i++) {
         auto[start, goal] = tasks[i];
-        auto [astar_solution, expanded] =  astar(&low_graph, start, goal);
+        auto[astar_solution, expanded] =  astar(&low_graph, start, goal);
         root_node.solution[i] = astar_solution;
     }
     root_node.update_cost();
@@ -62,10 +62,13 @@ vector<Path<Cell>> AFS_CBS::find_paths(const vector<std::pair<Cell, Cell>> &task
                 return paths;
             }
 
-            std::set<BCBSHighLevelNode, decltype(h_c)> focal_old = focal;
-            for (const BCBSHighLevelNode& n: focal_old) {
-                if (n.cost > curr_w * min_open.cost.value()) {
-                    focal.erase(n);
+//            std::set<BCBSHighLevelNode, decltype(h_c)> focal_old = focal;
+            auto it = focal.begin();
+            while (it != focal.end()) {
+                if (it->cost > curr_w * min_open.cost.value()) {
+                    it = focal.erase(it);
+                } else {
+                    ++it;
                 }
             }
         }

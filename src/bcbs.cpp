@@ -58,24 +58,24 @@ void BCBSHighLevelNode::update_cost() {
 }
 
 void BCBSHighLevelNode::update_h() {
-    h = 0;
+    int number_of_conflicts = 0;
     for (int i = 0; i < num_of_actors; i++) {
-        for (int j = i + 1; j < num_of_actors; j++) {
-            bool has_conflict = false;
-            for (TimedCell corr1: solution[i]) {
-                for (TimedCell corr2: solution[j]) {
-                    if (corr1 == corr2) {
-                        has_conflict = true;
-                        break;
+        boost::unordered_set<TimedCell> visits_by_agent;
+        for (TimedCell coors: solution[i]) {
+            visits_by_agent.insert(coors);
+        }
+        for (int j = 0; j < num_of_actors; j++) {
+            if (i != j) {
+                for (TimedCell coors: solution[j]) {
+                    if (visits_by_agent.find(coors) != visits_by_agent.end()) {
+                        number_of_conflicts += 1;
+                        break; // done with agent j, conflict (i, j) detected
                     }
-                }
-                if (has_conflict) {
-                    h += 1;
-                    break;
                 }
             }
         }
     }
+    h = number_of_conflicts;
 }
 
 VertexConflict BCBSHighLevelNode::find_vertex_conflict() const {

@@ -98,25 +98,25 @@ TEST(ECBSTest, ECBSMazeSmall4) {
 TEST(ECBSTest, ECBSMazeLarge1) {
     ECBSTest::testECBS("../data/maps/mapf/maze-32-32-2.map",
                      "../data/scens/mapf/maze-32-32-2-even-1.scen",
-                     0, 40);
+                     0, 30);
 }
 
 TEST(ECBSTest, ECBSMazeLarge2) {
     ECBSTest::testECBS("../data/maps/mapf/maze-32-32-2.map",
                      "../data/scens/mapf/maze-32-32-2-even-1.scen",
-                     100, 140);
+                     100, 130);
 }
 
 TEST(ECBSTest, ECBSMazeLarge3) {
     ECBSTest::testECBS("../data/maps/mapf/maze-32-32-2.map",
                      "../data/scens/mapf/maze-32-32-2-even-1.scen",
-                     180, 220);
+                     180, 210);
 }
 
 TEST(ECBSTest, ECBSMazeLarge4) {
     ECBSTest::testECBS("../data/maps/mapf/maze-32-32-2.map",
                      "../data/scens/mapf/maze-32-32-2-even-1.scen",
-                     56, 90);
+                     56, 80);
 }
 
 TEST(ECBSTest, ECBSCoastSmall1) {
@@ -141,4 +141,16 @@ TEST(ECBSTest, ECBSCoastSmall4) {
     ECBSTest::testECBS("../data/maps/mapf/w_woundedcoast.map",
                      "../data/scens/mapf/w_woundedcoast-even-1.scen",
                      200, 203);
+}
+
+TEST(ECBSTest, ECBSden520dLarge1) {
+    ECBSTest::testECBS("../data/maps/mapf/den520d.map",
+                     "../data/scens/mapf/den520d-even-1.scen",
+                     196, 200);
+}
+
+TEST(ECBSTest, ECBSbrc202dLarge1) {
+    ECBSTest::testECBS("../data/maps/mapf/brc202d.map",
+                     "../data/scens/mapf/brc202d-even-1.scen",
+                     200, 206);
 }

@@ -100,7 +100,7 @@ astar(Graph<Coordinates> *graph, Coordinates start, Coordinates goal,
       Compare comp = std::greater<Node<Coordinates>>()) {
 //    std::cout << "astar started" << std::endl;
     size_t expanded_nodes = 0;
-    auto open = Open<Coordinates>(comp);
+    auto open = Open<Coordinates, Compare>(comp);
     boost::unordered_map<Coordinates, Coordinates> real_parent;
     boost::unordered_map<Coordinates, double> dist;
     auto closed = Closed<Coordinates>();

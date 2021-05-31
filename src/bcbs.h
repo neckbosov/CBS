@@ -8,6 +8,7 @@
 #include "cbs.h"
 #include <set>
 #include <ctime>
+
 struct BCBSHighLevelNode {
     int id;
     int num_of_actors;
@@ -88,8 +89,8 @@ public:
                     new_node.edge_conflicts[actor].insert(edge);
                     auto left_low_graph = CBSLowLevelGraph(grid, new_node.vertex_conflicts[actor],
                                                            new_node.edge_conflicts[actor]);
-                    auto [new_path, expanded] = astar(&left_low_graph, TimedCell{tasks[actor].first, 0},
-                                          TimedCell{tasks[actor].second, 0});
+                    auto[new_path, expanded] = astar(&left_low_graph, TimedCell{tasks[actor].first, 0},
+                                                     TimedCell{tasks[actor].second, 0});
                     new_node.solution[actor] = Path<Cell>();
                     for (auto[cell, new_time]: new_path) {
                         new_node.solution[actor].push_back(TimedCell{cell.coordinates, new_time});
@@ -115,8 +116,8 @@ public:
                 new_node.vertex_conflicts[actor].insert(timedCell);
                 auto left_low_graph = CBSLowLevelGraph(grid, new_node.vertex_conflicts[actor],
                                                        new_node.edge_conflicts[actor]);
-                auto [new_path, expanded] = astar(&left_low_graph, TimedCell{tasks[actor].first, 0},
-                                      TimedCell{tasks[actor].second, 0});
+                auto[new_path, expanded] = astar(&left_low_graph, TimedCell{tasks[actor].first, 0},
+                                                 TimedCell{tasks[actor].second, 0});
 //                std::cout << "astar ok " << std::endl;
                 new_node.solution[actor] = Path<Cell>();
                 for (auto[cell, new_time]: new_path) {
@@ -133,11 +134,11 @@ public:
             }
             double new_cost_min = open.begin()->cost.value_or(0);
             if (!open.empty() && cost_min < new_cost_min) {
-                for (const BCBSHighLevelNode &n: open) {
-                    if (n.cost > w * cost_min && n.cost <= w * new_cost_min) {
-                        focal.insert(n);
-                    }
-                }
+                auto lnode = BCBSHighLevelNode(0, id + 1);
+                auto rnode = BCBSHighLevelNode(0, id + 2);
+                lnode.cost = std::optional<int>(w * cost_min);
+                rnode.cost = std::optional<int>(w * new_cost_min);
+                focal.insert(open.upper_bound(lnode), open.upper_bound(rnode));
             }
         }
         return vector<Path<Cell>>();
