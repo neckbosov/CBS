@@ -100,25 +100,25 @@ TEST(CBSTest, CBSMazeSmall4) {
 TEST(CBSTest, CBSMazeLarge1) {
     CBSTest::testCBS("../data/maps/mapf/maze-32-32-2.map",
                      "../data/scens/mapf/maze-32-32-2-even-1.scen",
-                     0, 40);
+                     0, 23);
 }
 
 TEST(CBSTest, CBSMazeLarge2) {
     CBSTest::testCBS("../data/maps/mapf/maze-32-32-2.map",
                      "../data/scens/mapf/maze-32-32-2-even-1.scen",
-                     100, 130);
+                     100, 123);
 }
 
 TEST(CBSTest, CBSMazeLarge3) {
     CBSTest::testCBS("../data/maps/mapf/maze-32-32-2.map",
                      "../data/scens/mapf/maze-32-32-2-even-1.scen",
-                     180, 220);
+                     180, 203);
 }
 
 TEST(CBSTest, CBSMazeLarge4) {
     CBSTest::testCBS("../data/maps/mapf/maze-32-32-2.map",
                      "../data/scens/mapf/maze-32-32-2-even-1.scen",
-                     56, 90);
+                     56, 80);
 }
 
 TEST(CBSTest, CBSCoastSmall1) {
@@ -149,4 +149,10 @@ TEST(CBSTest, CBSden520dLarge1) {
     CBSTest::testCBS("../data/maps/mapf/den520d.map",
                      "../data/scens/mapf/den520d-even-1.scen",
                      196, 210);
+}
+
+TEST(CBSTest, CBbrc202dLarge1) {
+    CBSTest::testCBS("../data/maps/mapf/brc202d.map",
+                     "../data/scens/mapf/brc202d-even-1.scen",
+                     200, 210);
 }

@@ -5,6 +5,9 @@
 #include <cassert>
 #include "ecbs.h"
 #include <boost/unordered_map.hpp>
+#include <vector>
+
+using std::vector;
 
 ECBS::ECBS(double w, vector<std::string> raw_grid) : w(w) {
     size_t n = raw_grid.size();
@@ -58,19 +61,6 @@ public:
         focal_heuristic = focal_heuristic1;
     }
 };
-
-size_t lowLevelFocalHeuristic(size_t agent_id,
-                              const std::vector<std::pair<Cell, int>> &time_conflicts,
-                              TimedCell node) {
-    std::set<size_t> conflict_pairs;
-    for (auto[coors, other_agent_id]: time_conflicts) {
-        if (coors == node.coordinates) {
-            conflict_pairs.insert(other_agent_id);
-        }
-    }
-    return conflict_pairs.size();
-}
-
 
 template<typename Coordinates, typename Compare = std::greater<Node<Coordinates>>>
 std::pair<Path<Coordinates>, size_t>
@@ -149,17 +139,12 @@ lowLevelEcbs(Graph<TimedCell> *graph, TimedCell start, TimedCell goal, double w,
     // We can't afford that!
 
     // time -> [(cell, agent_id)]
-    boost::unordered_map<int, std::vector<std::pair<Cell, int>>> time_conflict_map;
-
+    boost::unordered_map<TimedCell, boost::unordered_set<size_t>> time_conflict_map;
     for (size_t i = 0; i < solution.size(); i++) {
         if (i == agent_id)
             continue;
         for (TimedCell coors: solution[i]) {
-            if (time_conflict_map.find(coors.time) != time_conflict_map.end()) {
-                time_conflict_map[coors.time].push_back({coors.coordinates, i});
-            } else {
-                time_conflict_map[coors.time] = {{coors.coordinates, i}};
-            }
+            time_conflict_map[coors].insert(i);
         }
     }
 
@@ -180,11 +165,12 @@ lowLevelEcbs(Graph<TimedCell> *graph, TimedCell start, TimedCell goal, double w,
     auto focal = std::priority_queue<FocalNode, std::vector<FocalNode>, decltype(f2)>(f2);
 
     auto closed = Closed<TimedCell>();
-    auto start_focal_heuristic = lowLevelFocalHeuristic(
-            agent_id,
-            time_conflict_map.count(0) > 0 ? time_conflict_map[0] : vector<std::pair<Cell, int>>(),
-            start
-    );
+    auto start_focal_heuristic = time_conflict_map[start].size();
+//    auto start_focal_heuristic = lowLevelFocalHeuristic(
+//            agent_id,
+//            time_conflict_map.count(0) > 0 ? time_conflict_map[0] : vector<std::pair<Cell, int>>(),
+//            start
+//    );
     auto start_node = FocalNode(start, 0, 0.0, start, start_focal_heuristic);
 
     boost::unordered_map<TimedCell, TimedCell> real_parent;
@@ -267,12 +253,8 @@ lowLevelEcbs(Graph<TimedCell> *graph, TimedCell start, TimedCell goal, double w,
             if (!closed.was_expanded(x)) {
                 auto time = int(v.g_value + graph->get_cost(v.coordinates, x)); // time is int
 
-
-                auto focal_heuristic = lowLevelFocalHeuristic(agent_id,
-                                                              time_conflict_map.count(time) > 0
-                                                              ? time_conflict_map[time]
-                                                              : vector<std::pair<Cell, int>>(),
-                                                              x);
+                TimedCell nx{x.coordinates, time};
+                auto focal_heuristic = time_conflict_map[nx].size();
 
 
                 if (verbose)
@@ -294,6 +276,31 @@ bool highLevelFocalComparator(const ECBSHighLevelNode &a, const ECBSHighLevelNod
 
     return std::make_tuple(a.focal_heuristic, a.cost.value(), a.LB) >
            std::make_tuple(b.focal_heuristic, b.cost.value(), b.LB);
+}
+
+void update_conflicts(ECBSHighLevelNode &node, size_t actor, const vector<TimedCell> &new_path) {
+    int newNodeFocalHeuristic = node.focal_heuristic - int(node.agent_conflicts[actor].size() * 2);
+
+    for (auto conflict_agent: node.agent_conflicts[actor]) {
+        node.agent_conflicts[conflict_agent].erase(actor);
+    }
+    node.agent_conflicts[actor].clear();
+    boost::unordered_set<TimedCell> visits_by_agent;
+    for (auto coors: new_path) {
+        visits_by_agent.insert(coors);
+    }
+
+    for (size_t i = 0; i < node.solution.size(); i++) {
+        if (i == actor) continue;
+        for (auto cell: node.solution[i]) {
+            if (visits_by_agent.find(cell) != visits_by_agent.end()) {
+                newNodeFocalHeuristic += 2;
+                node.agent_conflicts[actor].insert(i);
+                node.agent_conflicts[i].insert(actor);
+            }
+        }
+    }
+    node.focal_heuristic = newNodeFocalHeuristic;
 }
 
 std::tuple<vector<Path<Cell>>, size_t, size_t> ECBS::find_paths(const vector<std::pair<Cell, Cell>> &tasks) {
@@ -336,10 +343,11 @@ std::tuple<vector<Path<Cell>>, size_t, size_t> ECBS::find_paths(const vector<std
     // We can store for each agent number of conflicts and recalculate this number every time
 
 
-    boost::unordered_map<size_t, std::set<size_t>> agent_conflicts;
+    vector<boost::unordered_set<size_t>> agent_conflicts(actors);
+
     int number_of_conflicts = 0;
     for (size_t i = 0; i < actors; i++) {
-        agent_conflicts[i] = {};
+//        agent_conflicts[i] = {};
         boost::unordered_set<TimedCell> visits_by_agent;
         for (TimedCell coors: root_node.solution[i]) {
             visits_by_agent.insert(coors);
@@ -359,7 +367,7 @@ std::tuple<vector<Path<Cell>>, size_t, size_t> ECBS::find_paths(const vector<std
 
     // Number of conflict pairs
     root_node.focal_heuristic = number_of_conflicts;
-
+    root_node.agent_conflicts = agent_conflicts;
 
     // Comparator to extract FOCAL
 
@@ -374,7 +382,8 @@ std::tuple<vector<Path<Cell>>, size_t, size_t> ECBS::find_paths(const vector<std
     root_node.updateCost();
     // todo: open and focal, open is set
     std::set<ECBSHighLevelNode, decltype(f1)> open(f1);
-    auto focal = std::priority_queue<ECBSHighLevelNode, vector<ECBSHighLevelNode>, decltype(f2)>(f2);
+    auto focal = std::priority_queue<ECBSHighLevelNode, vector<ECBSHighLevelNode>,
+            decltype(f2)>(f2);
 
     double high_f1_min = root_node.LB;
 
@@ -390,7 +399,7 @@ std::tuple<vector<Path<Cell>>, size_t, size_t> ECBS::find_paths(const vector<std
             if (!open.begin()->cost.has_value())
                 // no solution
                 // todo: ?????
-                return {vector<Path<Cell>>(), 0, 0};
+                return {vector<Path<Cell >>(), 0, 0};
 
             high_f1_min = open.begin()->LB;
 
@@ -447,31 +456,9 @@ std::tuple<vector<Path<Cell>>, size_t, size_t> ECBS::find_paths(const vector<std
                 new_node.LB -= new_node.agent_f1_min[actor];
                 new_node.LB += f1_min;
                 new_node.agent_f1_min[actor] = f1_min;
-
-                {
-                    int newNodeFocalHeuristic = root_node.focal_heuristic - int(agent_conflicts[actor].size() * 2);
-
-                    for (auto conflict_agent: agent_conflicts[actor]) {
-                        agent_conflicts[conflict_agent].erase(actor);
-                    }
-
-                    boost::unordered_set<TimedCell> visits_by_agent;
-                    for (auto coors: new_path) {
-                        visits_by_agent.insert(coors);
-                    }
-
-                    for (size_t i = 0; i < root_node.solution.size(); i++) {
-                        if (i == actor) continue;
-                        for (auto cell: root_node.solution[i]) {
-                            if (visits_by_agent.find(cell) != visits_by_agent.end()) {
-                                newNodeFocalHeuristic += 2;
-                                agent_conflicts[actor].insert(i);
-                                agent_conflicts[i].insert(actor);
-                            }
-                        }
-                    }
-                    new_node.focal_heuristic = newNodeFocalHeuristic;
-                }
+                new_node.focal_heuristic = v.focal_heuristic;
+                new_node.agent_conflicts = v.agent_conflicts;
+                update_conflicts(new_node, actor, new_path);
 
                 for (auto cell: new_path) {
                     new_node.solution[actor].push_back(cell);
@@ -512,31 +499,9 @@ std::tuple<vector<Path<Cell>>, size_t, size_t> ECBS::find_paths(const vector<std
             new_node.LB -= new_node.agent_f1_min[actor];
             new_node.LB += f1_min;
             new_node.agent_f1_min[actor] = f1_min;
-
-            {
-                int newNodeFocalHeuristic = root_node.focal_heuristic - int(agent_conflicts[actor].size() * 2);
-
-                for (auto conflict_agent: agent_conflicts[actor]) {
-                    agent_conflicts[conflict_agent].erase(actor);
-                }
-
-                boost::unordered_set<TimedCell> visits_by_agent;
-                for (auto coors: new_path) {
-                    visits_by_agent.insert(coors);
-                }
-
-                for (size_t i = 0; i < root_node.solution.size(); i++) {
-                    if (i == actor) continue;
-                    for (auto cell: root_node.solution[i]) {
-                        if (visits_by_agent.find(cell) != visits_by_agent.end()) {
-                            newNodeFocalHeuristic += 2;
-                            agent_conflicts[actor].insert(i);
-                            agent_conflicts[i].insert(actor);
-                        }
-                    }
-                }
-                new_node.focal_heuristic = newNodeFocalHeuristic;
-            }
+            new_node.focal_heuristic = v.focal_heuristic;
+            new_node.agent_conflicts = v.agent_conflicts;
+            update_conflicts(new_node, actor, new_path);
 
             for (auto cell: new_path) {
                 new_node.solution[actor].push_back(cell);
@@ -553,7 +518,7 @@ std::tuple<vector<Path<Cell>>, size_t, size_t> ECBS::find_paths(const vector<std
             }
         }
     }
-    return {vector<Path<Cell>>(), 0, 0};
+    return {vector<Path<Cell >>(), 0, 0};
 }
 
 
@@ -572,6 +537,7 @@ void ECBSHighLevelNode::updateCost() {
 ECBSHighLevelNode::ECBSHighLevelNode(size_t actors) {
     focal_heuristic = 0;
     LB = 0;
+    agent_conflicts = vector<boost::unordered_set<size_t>>(actors);
     solution = vector<Path<Cell>>(actors);
     agent_f1_min = vector<double>(actors);
     vertex_conflicts = vector<boost::unordered_set<TimedCell>>(actors);

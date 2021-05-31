@@ -128,23 +128,35 @@ TEST(AFSTest, AFSMazeSmall4) {
 TEST(AFSTest, AFSMazeLarge1) {
     AFSTest::testAFS("AFSMazeLarge1.txt", "../data/maps/mapf/maze-32-32-2.map",
                      "../data/scens/mapf/maze-32-32-2-even-1.scen",
-                     0, 40);
+                     0, 20);
 }
 
 TEST(AFSTest, AFSMazeLarge2) {
     AFSTest::testAFS("AFSMazeLarge2.txt", "../data/maps/mapf/maze-32-32-2.map",
                      "../data/scens/mapf/maze-32-32-2-even-1.scen",
-                     100, 140);
+                     100, 120);
 }
 
 TEST(AFSTest, AFSMazeLarge3) {
     AFSTest::testAFS("AFSMazeLarge3.txt", "../data/maps/mapf/maze-32-32-2.map",
                      "../data/scens/mapf/maze-32-32-2-even-1.scen",
-                     180, 220);
+                     180, 200);
 }
 
 TEST(AFSTest, AFSMazeLarge4) {
     AFSTest::testAFS("AFSMazeLarge4.txt", "../data/maps/mapf/maze-32-32-2.map",
                      "../data/scens/mapf/maze-32-32-2-even-1.scen",
-                     56, 90);
+                     56, 70);
+}
+
+TEST(AFSTest, AFSden520dLarge1) {
+    AFSTest::testAFS("AFSdenLarge1.txt","../data/maps/mapf/den520d.map",
+                       "../data/scens/mapf/den520d-even-1.scen",
+                       196, 210);
+}
+
+TEST(AFSTest, AFSbrc202dLarge1) {
+    AFSTest::testAFS("AFSbrcLarge1.txt","../data/maps/mapf/brc202d.map",
+                       "../data/scens/mapf/brc202d-even-1.scen",
+                       200, 210);
 }

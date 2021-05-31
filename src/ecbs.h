@@ -14,6 +14,7 @@ struct ECBSHighLevelNode {
     vector<double> agent_f1_min;
     vector<boost::unordered_set<TimedCell>> vertex_conflicts;
     vector<boost::unordered_set<TimedEdge>> edge_conflicts;
+    vector<boost::unordered_set<size_t >> agent_conflicts;
 
     std::optional<int> cost;
     double LB;
