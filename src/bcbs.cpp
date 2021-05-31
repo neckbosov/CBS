@@ -29,8 +29,8 @@ BCBS::BCBS(vector<vector<int>> grid, double weight) : grid(std::move(grid)) {
 BCBSHighLevelNode::BCBSHighLevelNode(size_t actors, int idd) {
     num_of_actors = (int) actors;
     solution = vector<Path<Cell>>(actors);
-    vertex_conflicts = vector<std::unordered_set<TimedCell>>(actors);
-    edge_conflicts = vector<std::unordered_set<TimedEdge>>(actors);
+    vertex_conflicts = vector<boost::unordered_set<TimedCell>>(actors);
+    edge_conflicts = vector<boost::unordered_set<TimedEdge>>(actors);
     cost = std::nullopt;
     h = 0;
     id = idd;
@@ -79,7 +79,7 @@ void BCBSHighLevelNode::update_h() {
 }
 
 VertexConflict BCBSHighLevelNode::find_vertex_conflict() const {
-    std::unordered_map<TimedCell, size_t> visits;
+    boost::unordered_map<TimedCell, size_t> visits;
     for (size_t i = 0; i < solution.size(); i++) {
         for (TimedCell coors: solution[i]) {
             auto it = visits.find(coors);
@@ -94,15 +94,19 @@ VertexConflict BCBSHighLevelNode::find_vertex_conflict() const {
 }
 
 EdgeConflict BCBSHighLevelNode::find_edge_conflict() const {
-    std::unordered_map<TimedEdge, size_t> passes;
+    boost::unordered_map<TimedEdge, size_t> passes;
     for (size_t i = 0; i < solution.size(); i++) {
         for (size_t j = 1; j < solution[i].size(); j++) {
             auto prev = solution[i][j - 1];
             auto cur = solution[i][j];
-            auto edge = TimedEdge{prev, cur};
+            auto rprev = cur;
+            auto rcur = prev;
+            rprev.time = prev.time;
+            rcur.time = cur.time;
+            auto edge = TimedEdge{rprev, rcur};
             auto it = passes.find(edge);
             if (it != passes.end()) {
-                return EdgeConflict({{i,          edge},
+                return EdgeConflict({{i,          TimedEdge{prev, cur}},
                                      {it->second, it->first}});
             } else {
                 passes[edge] = i;

@@ -38,11 +38,11 @@ def success_rate(alg_name, map_name, scen_name, num_agents, num_repetitions, w=N
     return rate / num_repetitions
 
 # build success_rate stats
-random_map, random_scen = 'brc202d.map', 'brc202d-even-1.scen'
+random_map, random_scen = 'maze-32-32-2.map',  'maze-32-32-2-even-1.scen'
 rate_list = []
 N = 10
-for num_actors in [1, 3, 5, 7, 10]:
-    rate = success_rate('ECBS', random_map, random_scen, num_actors, N, w=1.5)
+for num_actors in [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]:
+    rate = success_rate('ECBS', random_map, random_scen, num_actors, N, w=1.1)
     print(f'Num actors :{num_actors}, Rate: {rate:.2f}%')
     if rate <= 0.1:
         print("too low rate, stopping here")

@@ -7,16 +7,21 @@
 
 #include <queue>
 #include <vector>
-#include <unordered_set>
-#include <unordered_map>
 #include <algorithm>
 #include <iostream>
 #include "graph.h"
+#include <boost/heap/d_ary_heap.hpp>
+#include <boost/unordered_map.hpp>
+#include <boost/unordered_set.hpp>
+#include <boost/container_hash/hash.hpp>
+
+template<typename Coordinates, typename Compare=std::greater<Node<Coordinates>>>
+using astar_heap = boost::heap::d_ary_heap<Node<Coordinates>, boost::heap::arity<2>, boost::heap::compare<Compare>>;
 
 template<typename Coordinates, typename Compare=std::greater<Node<Coordinates>>>
 class Open {
 private:
-    std::priority_queue<Node<Coordinates>, std::vector<Node<Coordinates>>, Compare> elements;
+    astar_heap<Coordinates, Compare> elements;
 public:
     size_t size() {
         return elements.size();
@@ -37,19 +42,19 @@ public:
     }
 
     Open() {
-        elements = std::priority_queue<Node<Coordinates>, std::vector<Node<Coordinates>>, Compare>(
+        elements = astar_heap<Coordinates, Compare>(
                 std::greater<Node<Coordinates>>());
     }
 
     explicit Open(Compare comp) {
-        elements = std::priority_queue<Node<Coordinates>, std::vector<Node<Coordinates>>, Compare>(comp);
+        elements = astar_heap<Coordinates, Compare>(comp);
     }
 };
 
 template<typename Coordinates>
 class Closed {
 private:
-    std::unordered_set<Coordinates> elements;
+    boost::unordered_set<Coordinates> elements;
 public:
     size_t size() {
         return elements.size();
@@ -78,15 +83,12 @@ struct TimedCoordinates {
     }
 };
 
-namespace std {
-    template<typename Coordinates>
-    struct hash<TimedCoordinates<Coordinates>> {
-        size_t operator()(const TimedCoordinates<Coordinates> &timedCoordinates) const {
-            auto int_hasher = hash<int>();
-            auto coors_hasher = hash<Coordinates>();
-            return (int_hasher(timedCoordinates.time) << 1) ^ coors_hasher(timedCoordinates.coordinates);
-        }
-    };
+template<typename Coordinates>
+std::size_t hash_value(TimedCoordinates<Coordinates> const &value) {
+    size_t seed = 0;
+    boost::hash_combine(seed, value.coordinates);
+    boost::hash_combine(seed, value.time);
+    return seed;
 }
 
 template<typename Coordinates>
@@ -99,8 +101,8 @@ astar(Graph<Coordinates> *graph, Coordinates start, Coordinates goal,
 //    std::cout << "astar started" << std::endl;
     size_t expanded_nodes = 0;
     auto open = Open<Coordinates>(comp);
-    std::unordered_map<Coordinates, Coordinates> real_parent;
-    std::unordered_map<Coordinates, double> dist;
+    boost::unordered_map<Coordinates, Coordinates> real_parent;
+    boost::unordered_map<Coordinates, double> dist;
     auto closed = Closed<Coordinates>();
     auto start_node = Node<Coordinates>(start, 0, 0.0, start);
     open.add_node(start_node);

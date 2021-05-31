@@ -85,3 +85,7 @@ std::pair<vector<Path<Cell>>, size_t> AstarNDim::find_paths(const vector<std::pa
     }
     return {res, expanded};
 }
+
+std::size_t hash_value(const NCoors &value) {
+    return boost::hash_range(value.coors.begin(), value.coors.end());
+}

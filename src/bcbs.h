@@ -12,8 +12,8 @@ struct BCBSHighLevelNode {
     int id;
     int num_of_actors;
     vector<Path<Cell>> solution;
-    vector<std::unordered_set<TimedCell>> vertex_conflicts;
-    vector<std::unordered_set<TimedEdge>> edge_conflicts;
+    vector<boost::unordered_set<TimedCell>> vertex_conflicts;
+    vector<boost::unordered_set<TimedEdge>> edge_conflicts;
     std::optional<int> cost;
     double h;
 
