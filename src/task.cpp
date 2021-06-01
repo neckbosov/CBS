@@ -5,11 +5,8 @@
 #include <utility>
 #include <string>
 
-Task::Task(std::string mapName,
-           std::size_t mapHeight, std::size_t mapWidth,
-           Cell from, Cell to, double bestDistance)
-        : start{from}, finish{to}, bestDistance{bestDistance}, mapHeight{mapHeight}, mapWidth{mapWidth},
-          mapName{std::move(mapName)} {}
+Task::Task(Cell from, Cell to, double bestDistance)
+        : start{from}, finish{to}, bestDistance{bestDistance} {}
 
 std::vector<Task> Task::fromMovingAI(const std::filesystem::path& path) {
     std::ifstream inp(path);
@@ -42,7 +39,7 @@ std::vector<Task> Task::fromMovingAI(const std::filesystem::path& path) {
         if (!(reader >> to.second)) throw std::invalid_argument("expected goal.x");
         if (!(reader >> to.first)) throw std::invalid_argument("expected goal.y");
         if (!(reader >> dist)) throw std::invalid_argument("expected best possible distance");
-        tasks.push_back(Task(name, h, w, Cell({from.first, from.second}), Cell({to.first, to.second}), dist));
+        tasks.push_back(Task(Cell({from.first, from.second}), Cell({to.first, to.second}), dist));
     }
 
     return tasks;

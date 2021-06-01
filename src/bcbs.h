@@ -10,13 +10,13 @@
 #include <ctime>
 
 struct BCBSHighLevelNode {
-    int id;
-    int num_of_actors;
-    vector<Path<Cell>> solution;
-    vector<boost::unordered_set<TimedCell>> vertex_conflicts;
-    vector<boost::unordered_set<TimedEdge>> edge_conflicts;
-    std::optional<int> cost;
-    double h;
+    int id; // special field for easier comparison
+    int num_of_actors; // number of actors
+    vector<Path<Cell>> solution; // list of paths for each actor
+    vector<boost::unordered_set<TimedCell>> vertex_conflicts; // existing vertex conflicts for node solution
+    vector<boost::unordered_set<TimedEdge>> edge_conflicts; // existing edge conflicts for node solution
+    std::optional<int> cost; // cost of node solution
+    double h; // heuristic: pairs number of conflicting agents
 
     bool operator>(const CBSHighLevelNode &other) const {
         if (!cost.has_value()) {
@@ -54,10 +54,32 @@ private:
     vector<vector<int>> grid;
     double w;
 public:
+    /**
+     * Create BCBS(w, 1) instance
+     * @param w weight which will be used on the high level
+     * @param raw_grid grid where '.' signifies empty cell and '#' - obstacle
+     */
     explicit BCBS(vector<std::string> raw_grid, double w);
 
+    /**
+     * Create BCBS(w, 1) instance
+     * @param weight weight which will be used on the high level
+     * @param grid where 0 signifies empty cell and 1 - obstacle
+     */
     BCBS(vector<vector<int>> grid, double weight);
 
+    /**
+     * Find paths with suboptimal BCBS(w, 1)
+     * @tparam Cmp1 comparator for open
+     * @tparam Cmp2 comparator for focal
+     * @param tasks list of start and goal positions of agents
+     * @param open high level open set
+     * @param focal high level focal set
+     * @param id the first free id which we can assign
+     * @param tStart time of start in clocks
+     * @param seconds_limit execution limit in seconds
+     * @return non-conflict paths for agents (or empty list if not found/timeout)
+     */
     template<typename Cmp1, typename Cmp2>
     vector<Path<Cell>> find_paths(const vector<std::pair<Cell, Cell>> &tasks,
                                   std::set<BCBSHighLevelNode, Cmp1> &open,

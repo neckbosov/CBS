@@ -55,6 +55,8 @@ std::tuple<vector<Path<Cell>>, std::vector<std::pair<double, double>>> AFS_CBS::
     double prev_cost = 0;
     double curr_w = w1;
     weight_time_stat.emplace_back(0.0, curr_w);
+
+    // while open is not empty or time has not finished
     while ((!paths.empty() || 1.0L * (clock() - tStart) / CLOCKS_PER_SEC < 1.0L * seconds_limit) && !open.empty()) {
         if (iter != 0) {
             BCBSHighLevelNode min_open = *open.begin();

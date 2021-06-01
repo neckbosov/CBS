@@ -16,13 +16,7 @@ public:
     const double bestDistance;
 protected:
     Task() = default;
-    Task(std::string mapName,
-             std::size_t mapHeight, std::size_t mapWidth,
-             Cell from, Cell to, double bestDistance);
-
-    const std::size_t mapHeight;
-    const std::size_t mapWidth;
-    const std::string mapName;
+    Task(Cell from, Cell to, double bestDistance);
 };
 
 #endif

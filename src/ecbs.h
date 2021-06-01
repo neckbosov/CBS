@@ -36,8 +36,18 @@ private:
     double w;
     vector<vector<int>> grid;
 public:
+    /**
+     * Create ECBS instance
+     * @param w initial weight which will be used on the both levels
+     * @param raw_grid grid where '.' signifies empty cell and '#' - obstacle
+     */
     explicit ECBS(double w, vector<std::string> raw_grid);
 
+    /**
+     * Find paths with suboptimal ECBS
+     * @param tasks
+     * @return non-conflict paths for agents (or empty list if not found/timeout)
+     */
     std::tuple<vector<Path<Cell>>, size_t, size_t> find_paths(const vector<std::pair<Cell, Cell>> &tasks);
 
 };
