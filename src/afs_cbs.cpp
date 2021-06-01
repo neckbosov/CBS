@@ -22,7 +22,7 @@ AFS_CBS::AFS_CBS(double w, vector<std::string> raw_grid) {
     }
 }
 
-vector<Path<Cell>> AFS_CBS::find_paths(const vector<std::pair<Cell, Cell>> &tasks, long seconds_limit) {
+std::tuple<vector<Path<Cell>>, std::vector<std::pair<double, double>>> AFS_CBS::find_paths(const vector<std::pair<Cell, Cell>> &tasks, long seconds_limit) {
     clock_t tStart = clock();
     size_t actors = tasks.size();
     auto low_graph = AStarGridGraph(grid);
@@ -50,19 +50,21 @@ vector<Path<Cell>> AFS_CBS::find_paths(const vector<std::pair<Cell, Cell>> &task
     focal.insert(root_node);
 
     int iter = 0;
+    std::vector<std::pair<double, double>> weight_time_stat = {};
     std::vector<Path<Cell>> paths = std::vector<Path<Cell>>();
     double prev_cost = 0;
     double curr_w = w1;
+    weight_time_stat.emplace_back(0.0, curr_w);
     while ((!paths.empty() || 1.0L * (clock() - tStart) / CLOCKS_PER_SEC < 1.0L * seconds_limit) && !open.empty()) {
         if (iter != 0) {
             BCBSHighLevelNode min_open = *open.begin();
             curr_w = prev_cost / min_open.cost.value() - 1e-4;
+            weight_time_stat.emplace_back(1.0L * (clock() - tStart) / CLOCKS_PER_SEC, curr_w);
 
             if (curr_w <= 1 + 1e-8) {
-                return paths;
+                return {paths, weight_time_stat};
             }
 
-//            std::set<BCBSHighLevelNode, decltype(h_c)> focal_old = focal;
             auto it = focal.begin();
             while (it != focal.end()) {
                 if (it->cost > curr_w * min_open.cost.value()) {
@@ -72,11 +74,9 @@ vector<Path<Cell>> AFS_CBS::find_paths(const vector<std::pair<Cell, Cell>> &task
                 }
             }
         }
-//        std::cout << iter << std::endl;
         auto paths_new = BCBS(grid, curr_w).find_paths(tasks, open, focal, id, tStart, seconds_limit);
-//        std::cout << "bcbs ended" << std::endl;
         if (paths_new.empty()) {
-            return paths;
+            return {paths, weight_time_stat};
         } else {
             paths = paths_new;
             prev_cost = 0;
@@ -87,5 +87,5 @@ vector<Path<Cell>> AFS_CBS::find_paths(const vector<std::pair<Cell, Cell>> &task
         iter++;
     }
 
-    return paths;
+    return {paths, weight_time_stat};
 }

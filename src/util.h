@@ -11,4 +11,6 @@
 void print_paths_to_file(const std::vector<Path<Cell>>& paths, const std::string& filename, size_t hl_expanded,
                          size_t ll_expanded);
 
+void print_weight_time_map_to_file(const std::vector<std::pair<double, double>>& weights_time_map, const std::string& filename);
+
 #endif //CBS_UTIL_H

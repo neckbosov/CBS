@@ -33,7 +33,7 @@ std::tuple<vector<Path<Cell>>, size_t, size_t> run_ECBS(const Map &map, const ve
     return ecbs.find_paths(cell_tasks);
 }
 
-vector<Path<Cell>> run_AFS(const Map &map, const vector<Task> &tasks, int timeout) {
+std::tuple<vector<Path<Cell>>, std::vector<std::pair<double, double>>> run_AFS(const Map &map, const vector<Task> &tasks, int timeout) {
     auto afs = AFS_CBS(1.5, map.generate_raw_grid());
     auto cell_tasks = vector<std::pair<Cell, Cell>>();
     for (const auto &task : tasks) {
@@ -84,7 +84,9 @@ int main(int argc, char **argv) {
         low_expanded = ll_ex;
     } else if (alg == "AFS") {
         int timeout = atoi(argv[7]);
-        paths = run_AFS(map, tasks, timeout);
+        auto[afs_paths, weights_time_map] = run_AFS(map, tasks, timeout);
+        paths = afs_paths;
+        print_weight_time_map_to_file(weights_time_map, argv[8]);
     } else if (alg == "ASTAR") {
         auto[astar_paths, ex] = run_ASTAR(map, tasks);
         paths = astar_paths;
