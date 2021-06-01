@@ -127,12 +127,6 @@ lowLevelEcbs(Graph<TimedCell> *graph, TimedCell start, TimedCell goal, double w,
              const vector<Path<Cell>> &solution,
              double &f1_min) {
 
-#ifdef VERBOSE
-    bool verbose = true;
-#else
-    bool verbose = false;
-#endif
-
     // PreCalculate map: time -> (pos, agent)
     // it's need to calculate focal heuristics
     // (we need to now, how many different agens conflict with node (time, pos) in current solution
@@ -147,10 +141,6 @@ lowLevelEcbs(Graph<TimedCell> *graph, TimedCell start, TimedCell goal, double w,
         for (TimedCell coors: solution[i]) {
             time_conflict_map[coors].insert(i);
         }
-    }
-
-    if (verbose) {
-        std::cout << "Low level search" << '\n';
     }
 
     auto f1 = [](const FocalNode &a, const FocalNode &b) {
@@ -216,10 +206,6 @@ lowLevelEcbs(Graph<TimedCell> *graph, TimedCell start, TimedCell goal, double w,
 
         auto v = focal.top();
 
-        if (verbose) {
-            std::cout << "focal size " << focal.size() << " open size " << open.size() << '\n';
-            std::cout << showTimedCell(v.coordinates) << " opened\n";
-        }
         focal.pop();
         open.erase(v);
 
@@ -248,9 +234,6 @@ lowLevelEcbs(Graph<TimedCell> *graph, TimedCell start, TimedCell goal, double w,
                 TimedCell nx{x.coordinates, time};
                 auto focal_heuristic = time_conflict_map[nx].size();
 
-
-                if (verbose)
-                    std::cout << showTimedCell(x) << " added to open\n";
                 auto nodeX = FocalNode(x, time,
                                        graph->get_h_value(goal, x),
                                        v.coordinates,
@@ -324,13 +307,6 @@ std::tuple<vector<Path<Cell>>, size_t, size_t> ECBS::find_paths(const vector<std
         root_node.agent_f1_min[i] = f1_min;
     }
 
-    if (verbose) {
-        std::cout << "High Level started\n";
-        for (size_t i = 0; i < actors; i++) {
-            std::cout << "Init Solution for " << i << ": " << showPath(root_node.solution[i]) << '\n';
-        }
-    }
-
     // For focal heuristic we must know number of pairs of conflict agents
     // After expanding single node, only one agent change its solution
     // We can store for each agent number of conflicts and recalculate this number every time
@@ -396,10 +372,6 @@ std::tuple<vector<Path<Cell>>, size_t, size_t> ECBS::find_paths(const vector<std
 
             high_f1_min = open.begin()->LB;
 
-            //assert(high_f1_min >= old_f1_min);
-
-            if (verbose)
-                std::cout << "High f1_min changed: From " << old_f1_min << " to " << high_f1_min << '\n';
             auto iter = open.begin();
             auto iter_end = open.end();
             focal = std::priority_queue<ECBSHighLevelNode, vector<ECBSHighLevelNode>, decltype(f2)>(f2);
@@ -409,17 +381,10 @@ std::tuple<vector<Path<Cell>>, size_t, size_t> ECBS::find_paths(const vector<std
                 if (val <= high_f1_min * w) {
                     focal.push(*iter);
                 }
-//                if (val > high_f1_min * w) {
-//                    break;
-//                }
             }
         }
 
         assert(!focal.empty());
-
-        if (verbose) {
-            std::cout << "High Level open size: " << open.size() << " Focal size: " << focal.size() << '\n';
-        }
 
         auto v = focal.top();
         focal.pop();
@@ -457,11 +422,6 @@ std::tuple<vector<Path<Cell>>, size_t, size_t> ECBS::find_paths(const vector<std
                     new_node.solution[actor].push_back(cell);
                 }
 
-                if (verbose) {
-                    std::cout << "For actor: " << actor << " new path found: " << showPath(new_node.solution[actor])
-                              << '\n';
-                }
-
                 new_node.updateCost();
                 if (new_node.cost.has_value()) {
                     open.insert(new_node);
@@ -470,10 +430,6 @@ std::tuple<vector<Path<Cell>>, size_t, size_t> ECBS::find_paths(const vector<std
         }
 
         auto[actor1, actor2, timedCell] = conflict.value();
-        if (verbose)
-            std::cout << "Found conflict: a1:" << actor1 << " a2:" << actor2 << " cell: " << showTimedCell(timedCell)
-                      << '\n';
-
         for (auto actor: {actor1, actor2}) {
             auto new_node = v;
             new_node.vertex_conflicts[actor].insert(timedCell);
@@ -498,11 +454,6 @@ std::tuple<vector<Path<Cell>>, size_t, size_t> ECBS::find_paths(const vector<std
 
             for (auto cell: new_path) {
                 new_node.solution[actor].push_back(cell);
-            }
-
-            if (verbose) {
-                std::cout << "For actor: " << actor << " new path found: " << showPath(new_node.solution[actor])
-                          << '\n';
             }
 
             new_node.updateCost();

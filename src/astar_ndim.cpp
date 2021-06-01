@@ -31,7 +31,6 @@ void fill_moves(const vector<vector<Cell>> &directions, size_t pos, NCoors cur, 
 }
 
 std::vector<NCoors> AstarNDimGraph::get_neighbours(NCoors coors) {
-//    std::cout << "get neighcbours" << std::endl;
     vector<Cell> directions{{0,  1},
                             {1,  0},
                             {0,  -1},
@@ -48,7 +47,6 @@ std::vector<NCoors> AstarNDimGraph::get_neighbours(NCoors coors) {
         }
     }
     vector<NCoors> ans;
-//    std::cout << "fill moves" << std::endl;
     fill_moves(res, 0, coors, ans);
     return ans;
 }
