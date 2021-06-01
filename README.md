@@ -8,4 +8,4 @@
 mkdir build && cd build && cmake .. && make -j6 && cd ..
 ```
 
-Бенчмарки находятся в файле `Benchmarks.ipynb`
+Бенчмарки находятся в файлах `Benchmarks.ipynb`, `Benchmarks-ECBS-CBS-opt-stat.ipynb` и `BenchmarksAFS-stat-weight-time.ipynb`
