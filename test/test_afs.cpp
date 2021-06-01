@@ -28,7 +28,7 @@ public:
         for (const auto&task:firstNTasks) {
             cell_tasks.emplace_back(Cell({task.start.x, task.start.y}), Cell({task.finish.x, task.finish.y}));
         }
-        auto paths = afs.find_paths(cell_tasks, 2 * 60);
+        auto[paths, weights_time] = afs.find_paths(cell_tasks, 2 * 60);
         print_paths_to_file(paths, task_filename, 0, 0);
         ASSERT_EQ(paths.size(), cell_tasks.size());
         for (int i = 0; i < (int)paths.size(); i++) {
@@ -50,6 +50,12 @@ TEST(AFSTest, AFSSimple) {
     AFSTest::testAFS("AFSSimple.txt", "../data/maps/one-way-simple.map",
                      "../data/scens/mapf/one-way-simple.scen",
                      0, 2);
+}
+
+TEST(AFSTest, AFSRandSmall1) {
+    AFSTest::testAFS("AFSBostonSmall1.txt", "../data/maps/mapf/random-32-32-20.map",
+                     "../data/scens/mapf/random-32-32-20-even-1.scen",
+                     0, 80);
 }
 
 TEST(AFSTest, AFSBostonSmall1) {
