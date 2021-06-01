@@ -18,4 +18,4 @@ build/test/CBS_tst
 build/src/CBS_run
 ```
 
-Бенчмарки находятся в файле `Benchmarks.ipynb`
+Бенчмарки находятся в файлах `Benchmarks.ipynb`, `Benchmarks-ECBS-CBS-opt-stat.ipynb` и `BenchmarksAFS-stat-weight-time.ipynb`
