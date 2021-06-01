@@ -521,7 +521,7 @@ EdgeConflict ECBSHighLevelNode::findEdgeConflict() const {
                 return EdgeConflict({{i,          TimedEdge{prev, cur}},
                                      {it->second, it->first}});
             } else {
-                passes[edge] = i;
+                passes[TimedEdge{prev, cur}] = i;
             }
         }
     }

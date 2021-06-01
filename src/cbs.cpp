@@ -148,7 +148,7 @@ EdgeConflict CBSHighLevelNode::find_edge_conflict() const {
                 return EdgeConflict({{i,          TimedEdge{prev, cur}},
                                      {it->second, it->first}});
             } else {
-                passes[edge] = i;
+                passes[TimedEdge{prev, cur}] = i;
             }
         }
     }

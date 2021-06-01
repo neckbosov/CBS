@@ -21,7 +21,7 @@ using std::vector;
 using std::hypot;
 using std::abs;
 
-
+/// Grid cell
 struct Cell {
     int x;
     int y;
@@ -41,9 +41,10 @@ struct Cell {
 
 std::size_t hash_value(Cell const &value);
 
-
+/// Grid cell with time
 using TimedCell = TimedCoordinates<Cell>;
 
+/// Edge between timed cells
 struct TimedEdge {
     TimedCell first;
     TimedCell second;
@@ -59,6 +60,7 @@ struct TimedEdge {
 
 std::size_t hash_value(TimedEdge const &value);
 
+/// Grid graph for Astar
 class AStarGridGraph : public Graph<Cell> {
 public:
     vector<vector<int>> &source_cells;
@@ -73,7 +75,7 @@ public:
 
     AStarGridGraph(vector<vector<int>> &&) = delete;
 };
-
+/// Low level CBS graph from timed cells
 class CBSLowLevelGraph : public Graph<TimedCell> {
 public:
     vector<vector<int>> &source_cells;
@@ -100,6 +102,7 @@ public:
 using VertexConflict = std::optional<std::tuple<size_t, size_t, TimedCell>>;
 using EdgeConflict = std::vector<std::pair<size_t, TimedEdge>>;
 
+/// High level CBS node, contains solution and actual conflicts
 struct CBSHighLevelNode {
     vector<Path<Cell>> solution;
     vector<boost::unordered_set<TimedCell>> vertex_conflicts;
