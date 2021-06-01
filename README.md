@@ -23,4 +23,5 @@ build/test/CBS_tst
 build/src/CBS_run
 ```
 
-Бенчмарки находятся в файлах `Benchmarks.ipynb`, `Benchmarks-ECBS-CBS-opt-stat.ipynb` и `BenchmarksAFS-stat-weight-time.ipynb`. Результаты, графики и выводы, а также более подробное описание содержится в отчете.
+Бенчмарки находятся в файлах `Benchmarks.ipynb`, `Benchmarks-ECBS-CBS-opt-stat.ipynb` и `BenchmarksAFS-stat-weight-time.ipynb`. Результаты, графики и выводы, а также более подробное описание содержится в отчете. Ради удобства и красоты графики были сделаны в Excel, а не в файлах с бенчмарками.
+
